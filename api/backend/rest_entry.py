@@ -6,7 +6,18 @@ from logging.handlers import RotatingFileHandler
 
 from backend.db_connection import db
 from backend.simple.simple_routes import simple_routes
-from backend.ngos.ngo_routes import ngos
+from backend.patient.patient_routes import patients
+from backend.visit.visit_routes import visits
+from backend.vital.vital_routes import vitals
+from backend.condition.condition_routes import conditions
+from backend.medication.medication_routes import medications
+from backend.discharge.discharge_routes import discharges
+from backend.insurance.insurance_routes import insurance
+from backend.doctor.doctor_routes import doctors
+from backend.nurse.nurse_routes import nurses
+from backend.proxy.proxy_routes import proxies
+from backend.message.message_routes import messages
+from backend.alert.alert_routes import alerts
 
 def create_app():
     app = Flask(__name__)
@@ -46,7 +57,20 @@ def create_app():
     # and give a url prefix to each
     app.logger.info("create_app(): registering blueprints with Flask app object.")
     app.register_blueprint(simple_routes)
-    app.register_blueprint(ngos, url_prefix="/ngo")
+    
+    # Register VitalFlow healthcare system blueprints
+    app.register_blueprint(patients, url_prefix="/patient")
+    app.register_blueprint(visits, url_prefix="/visit")
+    app.register_blueprint(vitals, url_prefix="/vital")
+    app.register_blueprint(conditions, url_prefix="/condition")
+    app.register_blueprint(medications, url_prefix="/medication")
+    app.register_blueprint(discharges, url_prefix="/discharge")
+    app.register_blueprint(insurance, url_prefix="/insurance")
+    app.register_blueprint(doctors)
+    app.register_blueprint(nurses)
+    app.register_blueprint(proxies)
+    app.register_blueprint(messages)
+    app.register_blueprint(alerts)
 
     # Don't forget to return the app object
     return app
