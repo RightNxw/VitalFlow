@@ -67,21 +67,21 @@ def create_message():
         cursor = db.get_db().cursor()
         
         # Validate required fields
-        required_fields = ["Message", "SentTime", "PostedBy", "PostedByRole"]
+        required_fields = ["Message", "PostedBy", "PostedByRole"]
         for field in required_fields:
             if field not in data:
                 return jsonify({"error": f"Missing required field: {field}"}), 400
         
         # Insert new message
         query = """
-        INSERT INTO MessageDetails (Message, SentTime, PostedBy, PostedByRole)
-        VALUES (%s, %s, %s, %s)
+        INSERT INTO MessageDetails (MessageTitle, Message, SentTime, PostedBy, PostedByRole)
+        VALUES (%s, %s, NOW(), %s, %s)
         """
         cursor.execute(
             query,
             (
+                data.get("MessageTitle", ""),
                 data["Message"],
-                data["SentTime"],
                 data["PostedBy"],
                 data["PostedByRole"]
             ),
@@ -89,6 +89,30 @@ def create_message():
         
         db.get_db().commit()
         new_message_id = cursor.lastrowid
+        
+        # Handle recipient assignment based on recipient type and ID
+        recipient_type = data.get("RecipientType")
+        recipient_id = data.get("RecipientID")
+        
+        if recipient_type and recipient_id:
+            if recipient_type == "patient":
+                cursor.execute(
+                    "INSERT INTO MessagePatients (MessageID, PatientID) VALUES (%s, %s)",
+                    (new_message_id, recipient_id)
+                )
+            elif recipient_type == "doctor":
+                cursor.execute(
+                    "INSERT INTO MessageDoctor (MessageID, DoctorID) VALUES (%s, %s)",
+                    (new_message_id, recipient_id)
+                )
+            elif recipient_type == "nurse":
+                cursor.execute(
+                    "INSERT INTO MessageNurse (MessageID, NurseID) VALUES (%s, %s)",
+                    (new_message_id, recipient_id)
+                )
+            
+            db.get_db().commit()
+        
         cursor.close()
         
         return jsonify({"message": "Message created successfully", "message_id": new_message_id}), 201

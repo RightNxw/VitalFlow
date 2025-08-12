@@ -120,6 +120,7 @@ CREATE TABLE IF NOT EXISTS Patient_Medications (
 
 CREATE TABLE IF NOT EXISTS MessageDetails (
     MessageID INTEGER PRIMARY KEY AUTO_INCREMENT,
+    MessageTitle VARCHAR(200),
     Message TEXT NOT NULL,
     SentTime DATETIME DEFAULT CURRENT_TIMESTAMP,
     PostedBy INTEGER NOT NULL,
@@ -354,17 +355,17 @@ INSERT INTO Patient_Medications (PatientID, MedicationID, PrescribedDate, EndDat
 (14, 10, '2024-06-25', '2024-06-30'),
 (15, 15, '2024-07-01', '2024-07-08');
 
-INSERT INTO MessageDetails (Message, PostedBy, PostedByRole) VALUES
-('Your lab results are ready. Everything looks normal.', 2, 'Doctor'),
-('Please schedule your follow-up appointment for next month.', 1, 'Nurse'),
-('Remember to take your medication with food.', 3, 'Doctor'),
-('Your X-ray shows good healing progress.', 6, 'Doctor'),
-('How are you feeling with the new medication?', 5, 'Doctor'),
-('Surgery scheduled for May 15th at 8 AM.', 6, 'Nurse'),
-('Please arrive 30 minutes before your chemotherapy appointment.', 7, 'Nurse'),
-('Your prescription has been sent to the pharmacy.', 8, 'Doctor'),
-('Avoid direct sunlight while on this medication.', 9, 'Doctor'),
-('Post-surgery recovery is going well. Continue rest.', 10, 'Doctor');
+INSERT INTO MessageDetails (MessageTitle, Message, PostedBy, PostedByRole) VALUES
+('Lab Results Available', 'Your lab results are ready. Everything looks normal.', 2, 'Doctor'),
+('Follow-up Appointment', 'Please schedule your follow-up appointment for next month.', 1, 'Nurse'),
+('Medication Reminder', 'Remember to take your medication with food.', 3, 'Doctor'),
+('X-ray Results', 'Your X-ray shows good healing progress.', 6, 'Doctor'),
+('Medication Check-in', 'How are you feeling with the new medication?', 5, 'Doctor'),
+('Surgery Schedule', 'Surgery scheduled for May 15th at 8 AM.', 6, 'Nurse'),
+('Chemotherapy Appointment', 'Please arrive 30 minutes before your chemotherapy appointment.', 7, 'Nurse'),
+('Prescription Update', 'Your prescription has been sent to the pharmacy.', 8, 'Doctor'),
+('Medication Warning', 'Avoid direct sunlight while on this medication.', 9, 'Doctor'),
+('Recovery Update', 'Post-surgery recovery is going well. Continue rest.', 10, 'Doctor');
 
 INSERT INTO MessagePatients (MessageID, PatientID) VALUES
 (1, 1),
