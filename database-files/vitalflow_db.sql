@@ -191,7 +191,7 @@ CREATE TABLE IF NOT EXISTS AlertsNurse (
 );
 
 INSERT INTO Doctor (FirstName, LastName, Specialty, YearOfExperience) VALUES
-('Sarah', 'Johnson', 'Cardiology', 15),
+('Maya', 'Ellison', 'Cardiology', 15),
 ('Michael', 'Chen', 'Internal Medicine', 12),
 ('Emily', 'Rodriguez', 'Pediatrics', 8),
 ('James', 'Williams', 'Emergency Medicine', 20),
