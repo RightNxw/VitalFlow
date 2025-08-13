@@ -102,19 +102,22 @@ def update_patient_medications(patient_id, medication_data):
             "PrescriptionName": medication_data["MedicationName"],
             "DosageAmount": medication_data["DosageAmount"],
             "DosageUnit": medication_data["DosageUnit"],
-            "PickUpLocation": medication_data["PickupLocation"],
+            "PickUpLocation": medication_data["PickUpLocation"],
             "RefillsLeft": medication_data["RefillsLeft"],
             "FrequencyAmount": medication_data["FrequencyAmount"],
             "FrequencyPeriod": medication_data["FrequencyPeriod"]
         }
         
         med_response = requests.post(f"{API_BASE_URL}/medication/medications", json=medication_create_data)
+        
         if med_response.status_code != 201:
+            st.error(f"Failed to create medication: {med_response.text}")
             return False
         
         # Get the created medication ID
         medication_id = med_response.json().get("medication_id")
         if not medication_id:
+            st.error("No medication ID returned from creation")
             return False
         
         # Then link the medication to the patient
@@ -125,9 +128,17 @@ def update_patient_medications(patient_id, medication_data):
             "EndDate": medication_data["EndDate"]
         }
         
-        link_response = requests.post(f"{API_BASE_URL}/medication/patient_medications", json=patient_med_data)
-        return link_response.status_code == 201
-    except:
+        link_response = requests.post(f"{API_BASE_URL}/medication/patient-medication", json=patient_med_data)
+        
+        if link_response.status_code != 201:
+            st.error(f"Failed to link patient to medication: {link_response.text}")
+            return False
+            
+        return True
+    except Exception as e:
+        st.error(f"Exception in update_patient_medications: {str(e)}")
+        import traceback
+        st.error(f"Full traceback: {traceback.format_exc()}")
         return False
 
 ## Main page logic
@@ -450,7 +461,7 @@ def show_patient_medications():
                     "DosageUnit": dosage_unit,
                     "FrequencyAmount": frequency_amount,
                     "FrequencyPeriod": frequency_period,
-                    "PickupLocation": pickup_location,
+                    "PickUpLocation": pickup_location,
                     "RefillsLeft": refills_left,
                     "StartDate": start_date.isoformat(),
                     "EndDate": end_date.isoformat() if end_date else None,
