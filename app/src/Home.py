@@ -71,7 +71,7 @@ if st.button('Act as Nina Pesci, a Proxy',  ## Updated to Proxy
             type = 'primary', 
             use_container_width=True):
     st.session_state['authenticated'] = True
-    st.session_state['role'] = 'administrator'
+    st.session_state['role'] = 'proxy'
     st.session_state['first_name'] = 'Nina'
     st.switch_page('pages/proxy_home.py')
 
