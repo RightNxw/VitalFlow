@@ -165,34 +165,43 @@ if selected_pid:
                 med_details = df_m[df_m['MedicationID'] == selected_med_id].iloc[0]
                 frequency_amount = med_details.get('FrequencyAmount', 1) or 1
                 
+                # Confirmation checkbox OUTSIDE the form so it triggers a rerun when toggled
+                confirm_key = f"confirm_admin_{selected_pid}_{selected_med_id}"
+                done_key = f"admin_done_{selected_pid}_{selected_med_id}"
+                confirm_admin = st.checkbox(
+                    f"I confirm administration (will decrease refills by {frequency_amount})",
+                    key=confirm_key,
+                    help=f"This action will decrease the refill count by {frequency_amount}"
+                )
+                already_done = st.session_state.get(done_key, False)
+                if already_done:
+                    st.info("This medication has been recorded as administered for this selection.")
+
                 # Administration form
                 with st.form("administer_medication"):
                     st.write("**Administration Details**")
-                    
+
                     col1, col2 = st.columns(2)
                     with col1:
                         st.write(f"**Medication:** {med_details.get('PrescriptionName', 'Unknown')}")
                         st.write(f"**Dosage:** {med_details.get('DosageAmount', '')} {med_details.get('DosageUnit', '')}")
                         st.write(f"**Frequency:** {frequency_amount} {med_details.get('FrequencyPeriod', '')}")
-                    
+
                     with col2:
                         st.write(f"**Current Refills:** {med_details.get('RefillsLeft', 0)}")
                         st.write(f"**Refills After Admin:** {max(0, (med_details.get('RefillsLeft', 0) or 0) - frequency_amount)}")
                         st.write(f"**Pickup Location:** {med_details.get('PickUpLocation', 'N/A')}")
-                    
-                    # Confirmation checkbox
-                    confirm_admin = st.checkbox(
-                        f"I confirm that I have administered this medication to the patient (will decrease refills by {frequency_amount})",
-                        help=f"This action will decrease the refill count by {frequency_amount}"
-                    )
-                    
-                    # Submit button
-                    if st.form_submit_button("Administer Medication", type="primary", disabled=not confirm_admin):
-                        if confirm_admin:
+
+                    # Submit button disabled after first successful submission
+                    if st.form_submit_button("Administered Medication", type="primary", disabled=already_done):
+                        if not confirm_admin:
+                            st.error("Please confirm administration using the checkbox above.")
+                        else:
                             success, message = administer_medication(selected_pid, selected_med_id)
                             if success:
+                                st.session_state[done_key] = True
                                 st.success(message)
-                                st.rerun()  # Refresh the page to show updated refill counts
+                                st.rerun()
                             else:
                                 st.error(f"Failed to administer medication: {message}")
         else:
