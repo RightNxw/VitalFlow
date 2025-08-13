@@ -34,7 +34,7 @@ SideBarLinks(show_home=True)
 
 # set the title of the page and provide a simple prompt. 
 logger.info("Loading the Home page of the app")
-st.title('CS 3200 Project Template')
+st.title('VitalFlow')
 st.write('\n\n')
 # st.write('### Overview:')
 # st.write('\n')
@@ -57,9 +57,9 @@ if st.button("Act as Maya, a Doctor",
     # finally, we ask streamlit to switch to another page, in this case, the 
     # landing page for this particular user type
     logger.info("Logging in as Doctor Persona")
-    st.switch_page('pages/New_Doctor_Home.py')
+    st.switch_page('pages/doctor_home.py')
 
-if st.button('Act as Mohammad, an USAID worker', 
+if st.button('Act as Mohammad, an USAID worker', ### we will need to change this
             type = 'primary', 
             use_container_width=True):
     st.session_state['authenticated'] = True
@@ -67,7 +67,7 @@ if st.button('Act as Mohammad, an USAID worker',
     st.session_state['first_name'] = 'Mohammad'
     st.switch_page('pages/10_USAID_Worker_Home.py')
 
-if st.button('Act as System Administrator', 
+if st.button('Act as System Administrator',  # we will need to change this
             type = 'primary', 
             use_container_width=True):
     st.session_state['authenticated'] = True
