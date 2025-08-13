@@ -21,53 +21,18 @@ def DoctorHomeNav():
     st.sidebar.page_link("pages/doctor_patients.py", label="Patients", icon="👥")
     st.sidebar.page_link("pages/doctor_alerts.py", label="Alerts", icon="⚠️")
     st.sidebar.page_link("pages/doctor_inbox.py", label="Inbox", icon="📥")
- 
- 
- 
-def WorldBankVizNav():
-    st.sidebar.page_link(
-        "pages/01_World_Bank_Viz.py", label="World Bank Visualization", icon="🏦"
-    )
- 
- 
-def MapDemoNav():
-    st.sidebar.page_link("pages/02_Map_Demo.py", label="Map Demonstration", icon="🗺️")
- 
- 
-## ------------------------ Examples for Role of usaid_worker ------------------------
 
-## these need to be updated to correct user personas of Nurse, Patient, Doctor!!! @Paulo @Ronak
-def ApiTestNav():
-    st.sidebar.page_link("pages/12_API_Test.py", label="Test the API", icon="🛜")
- 
- 
-def PredictionNav():
-    st.sidebar.page_link(
-        "pages/11_Prediction.py", label="Regression Prediction", icon="📈"
-    )
- 
- 
-def ClassificationNav():
-    st.sidebar.page_link(
-        "pages/13_Classification.py", label="Classification Demo", icon="🌺"
-    )
- 
- 
-def NgoDirectoryNav():
-    st.sidebar.page_link("pages/14_NGO_Directory.py", label="NGO Directory", icon="📁")
- 
- 
-def AddNgoNav():
-    st.sidebar.page_link("pages/15_Add_NGO.py", label="Add New NGO", icon="➕")
- 
- 
-#### ------------------------ System Admin Role ------------------------
-def AdminPageNav():
-    st.sidebar.page_link("pages/20_Admin_Home.py", label="System Admin", icon="🖥️")
-    st.sidebar.page_link(
-        "pages/21_ML_Model_Mgmt.py", label="ML Model Management", icon="🏢"
-    )
- 
+
+#### ------------------------ Examples for Role of proxy ------------------------
+def ProxyHomeNav():
+    # Proxy portal navigation
+    
+    st.sidebar.page_link("pages/proxy_home.py", label="Home", icon="🏠")
+    st.sidebar.page_link("pages/proxy_portal.py", label="Portal", icon="👥")
+    st.sidebar.page_link("pages/proxy_billing.py", label="Billing", icon="💰")
+    st.sidebar.page_link("pages/proxy_messages.py", label="Inbox", icon="📥")
+
+
  
 # --------------------------------Links Function -----------------------------------------------
 def SideBarLinks(show_home=False):
@@ -93,18 +58,10 @@ def SideBarLinks(show_home=False):
         ## Show doctor portal navigation if the user is a doctor role.
         if st.session_state["role"] == "doctor":
             DoctorHomeNav()
- 
-        ## If the user role is usaid worker, show the Api Testing page
-        if st.session_state["role"] == "usaid_worker":
-            PredictionNav()
-            ApiTestNav()
-            ClassificationNav()
-            NgoDirectoryNav()
-            AddNgoNav()
- 
-        ## If the user is an administrator, give them access to the administrator pages
-        if st.session_state["role"] == "administrator":
-            AdminPageNav()
+
+        ## Show proxy portal navigation if the user is a proxy role.
+        if st.session_state["role"] == "proxy":
+            ProxyHomeNav()
  
     ## Always show the About page at the bottom of the list of links
     AboutPageNav()
