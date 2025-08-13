@@ -67,8 +67,28 @@ def AdminPageNav():
     st.sidebar.page_link(
         "pages/21_ML_Model_Mgmt.py", label="ML Model Management", icon="🏢"
     )
- 
- 
+
+#### ------------------------ Nurse Role ------------------------
+def NurseDashboardNav():
+    st.sidebar.page_link("pages/xx_Nurse_Dashboard.py", label="Dashboard", icon="👩‍⚕️")
+
+
+def NursePatientsNav():
+    st.sidebar.page_link("pages/xx_Nurse_Patients.py", label="Patients", icon="🧑‍🤝‍🧑")
+
+
+def NurseTreatmentsNav():
+    st.sidebar.page_link("pages/xx_Nurse_Treatments.py", label="Treatments", icon="💊")
+
+
+def NurseAlertsNav():
+    st.sidebar.page_link("pages/xx_Nurse_Alerts.py", label="Alerts", icon="🚨")
+
+
+def NurseInboxNav():
+    st.sidebar.page_link("pages/xx_Nurse_Inbox.py", label="Inbox", icon="📥")
+
+
 # --------------------------------Links Function -----------------------------------------------
 def SideBarLinks(show_home=False):
     """
@@ -89,6 +109,21 @@ def SideBarLinks(show_home=False):
  
     ## Show the other page navigators depending on the users' role.
     if st.session_state["authenticated"]:
+
+        if st.session_state["role"] == "nurse":
+            NurseDashboardNav()
+            NursePatientsNav()
+            NurseTreatmentsNav()
+            NurseAlertsNav()
+            NurseInboxNav()
+
+        # Show World Bank Link and Map Demo Link if the user is a political strategy advisor role.
+        if st.session_state["role"] == "pol_strat_advisor":
+            PolStratAdvHomeNav()
+            WorldBankVizNav()
+            MapDemoNav()
+
+        # If the user role is usaid worker, show the Api Testing page
  
         ## Show doctor portal navigation if the user is a doctor role.
         if st.session_state["role"] == "doctor":
