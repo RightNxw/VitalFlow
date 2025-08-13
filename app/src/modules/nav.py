@@ -74,7 +74,7 @@ def NurseDashboardNav():
 
 
 def NursePatientsNav():
-    st.sidebar.page_link("pages/xx_Nurse_Patients.py", label="Patients", icon="🧑‍🤝‍🧑")
+    st.sidebar.page_link("pages/xx_Nurse_Patients.py", label="Patients", icon="👥")
 
 
 def NurseTreatmentsNav():
@@ -82,7 +82,7 @@ def NurseTreatmentsNav():
 
 
 def NurseAlertsNav():
-    st.sidebar.page_link("pages/xx_Nurse_Alerts.py", label="Alerts", icon="🚨")
+    st.sidebar.page_link("pages/xx_Nurse_Alerts.py", label="Alerts", icon="⚠️")
 
 
 def NurseInboxNav():
