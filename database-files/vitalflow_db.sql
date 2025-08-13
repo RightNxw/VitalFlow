@@ -102,7 +102,7 @@ CREATE TABLE IF NOT EXISTS Medication (
     PickUpLocation VARCHAR(100),
     RefillsLeft INTEGER,
     FrequencyAmount INTEGER,
-    FrequencyPeriod VARCHAR(20)
+    FrequencyPeriod VARCHAR(20),
 );
 
 CREATE TABLE IF NOT EXISTS Patient_Medications (
@@ -333,7 +333,10 @@ INSERT INTO Medication (PrescriptionName, DosageAmount, DosageUnit, PickUpLocati
 ('Gabapentin', 300, 'mg', 'Rite Aid - Center Blvd', 4, 3, 'daily'),
 ('Insulin Glargine', 10, 'units', 'Hospital Pharmacy', 5, 1, 'daily'),
 ('Aspirin', 81, 'mg', 'Walgreens - Oak Ave', 6, 1, 'daily'),
-('Acetaminophen', 500, 'mg', 'CVS Pharmacy - Main St', 2, 4, 'daily');
+('Acetaminophen', 500, 'mg', 'CVS Pharmacy - Main St', 2, 4, 'daily'),
+('Warfarin', 5, 'mg', 'Hospital Pharmacy', 8, 1, 'daily'),
+('Furosemide', 40, 'mg', 'CVS Pharmacy - Main St', 4, 2, 'daily'),
+('Lorazepam', 1, 'mg', 'Walgreens - Oak Ave', 3, 1, 'as needed');
 
 INSERT INTO Patient_Medications (PatientID, MedicationID, PrescribedDate, EndDate) VALUES
 (2, 1, '2024-02-20', '2025-02-20'),
@@ -352,7 +355,10 @@ INSERT INTO Patient_Medications (PatientID, MedicationID, PrescribedDate, EndDat
 (12, 1, '2024-06-15', NULL),
 (12, 11, '2024-06-15', NULL),
 (14, 10, '2024-06-25', '2024-06-30'),
-(15, 15, '2024-07-01', '2024-07-08');
+(15, 15, '2024-07-01', '2024-07-08'),
+(1, 16, '2024-07-15', NULL),
+(3, 17, '2024-07-20', NULL),
+(4, 18, '2024-07-25', NULL);
 
 INSERT INTO MessageDetails (Message, PostedBy, PostedByRole) VALUES
 ('Your lab results are ready. Everything looks normal.', 2, 'Doctor'),

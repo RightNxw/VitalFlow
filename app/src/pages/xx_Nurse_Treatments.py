@@ -63,6 +63,23 @@ def get_patient_medications(pid: int):
         return []
 
 
+def administer_medication(patient_id: int, medication_id: int):
+    """Administer medication to patient"""
+    try:
+        data = {
+            "PatientID": patient_id,
+            "MedicationID": medication_id
+        }
+        r = requests.post(f"{API_BASE}/medication/administer", json=data, timeout=10)
+        if r.status_code == 200:
+            return True, r.json().get("message", "Medication administered successfully")
+        else:
+            error_msg = r.json().get("error", f"Error {r.status_code}") if r.status_code != 500 else f"Server error {r.status_code}"
+            return False, error_msg
+    except requests.exceptions.RequestException as ex:
+        return False, f"Service unreachable: {ex}"
+
+
 st.title("Treatments")
 
 top_l, top_r = st.columns([3, 1])
@@ -117,12 +134,70 @@ if selected_pid:
         for c in ["PrescribedDate", "EndDate"]:
             if c in df_m.columns:
                 df_m[c] = pd.to_datetime(df_m[c], errors="coerce").dt.date
+        
         st.dataframe(df_m[cols] if cols else df_m, use_container_width=True, hide_index=True)
     else:
         st.caption("No medications linked to this patient.")
 
     st.divider()
-    st.subheader("Log Administration: TODO")
-    st.info("TODO: API route to record administrations isn't present yet.")
+    st.subheader("Medication Administration")
+    
+    if not df_m.empty:
+        # Create medication selection for administration
+        med_options = []
+        for _, med in df_m.iterrows():
+            refills = med.get('RefillsLeft', 0) or 0
+            if refills > 0:  # Only show medications with refills available
+                label = f"{med.get('PrescriptionName', 'Unknown')} - {med.get('DosageAmount', '')} {med.get('DosageUnit', '')} ({refills} refills left)"
+                med_options.append((med.get('MedicationID'), label))
+        
+        if med_options:
+            selected_med_label = st.selectbox(
+                "Select medication to administer", 
+                [label for _, label in med_options],
+                help="Only medications with available refills are shown"
+            )
+            
+            if selected_med_label:
+                selected_med_id = next(med_id for med_id, label in med_options if label == selected_med_label)
+                
+                # Get medication details for display
+                med_details = df_m[df_m['MedicationID'] == selected_med_id].iloc[0]
+                frequency_amount = med_details.get('FrequencyAmount', 1) or 1
+                
+                # Administration form
+                with st.form("administer_medication"):
+                    st.write("**Administration Details**")
+                    
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        st.write(f"**Medication:** {med_details.get('PrescriptionName', 'Unknown')}")
+                        st.write(f"**Dosage:** {med_details.get('DosageAmount', '')} {med_details.get('DosageUnit', '')}")
+                        st.write(f"**Frequency:** {frequency_amount} {med_details.get('FrequencyPeriod', '')}")
+                    
+                    with col2:
+                        st.write(f"**Current Refills:** {med_details.get('RefillsLeft', 0)}")
+                        st.write(f"**Refills After Admin:** {max(0, (med_details.get('RefillsLeft', 0) or 0) - frequency_amount)}")
+                        st.write(f"**Pickup Location:** {med_details.get('PickUpLocation', 'N/A')}")
+                    
+                    # Confirmation checkbox
+                    confirm_admin = st.checkbox(
+                        f"I confirm that I have administered this medication to the patient (will decrease refills by {frequency_amount})",
+                        help=f"This action will decrease the refill count by {frequency_amount}"
+                    )
+                    
+                    # Submit button
+                    if st.form_submit_button("Administer Medication", type="primary", disabled=not confirm_admin):
+                        if confirm_admin:
+                            success, message = administer_medication(selected_pid, selected_med_id)
+                            if success:
+                                st.success(message)
+                                st.rerun()  # Refresh the page to show updated refill counts
+                            else:
+                                st.error(f"Failed to administer medication: {message}")
+        else:
+            st.info("No medications available for administration (all medications have 0 refills).")
+    else:
+        st.info("No medications found for this patient.")
 
 
