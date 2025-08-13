@@ -149,3 +149,54 @@ def link_patient_medication():
         return jsonify({"message": "Patient linked to medication successfully"}), 201
     except Error as e:
         return jsonify({"error": str(e)}), 500
+
+# Administer medication to patient (decrease refills by frequency amount)
+@medications.route("/administer", methods=["POST"])
+def administer_medication():
+    try:
+        data = request.get_json()
+        cursor = db.get_db().cursor()
+        
+        # Validate required fields
+        required_fields = ["PatientID", "MedicationID"]
+        for field in required_fields:
+            if field not in data:
+                return jsonify({"error": f"Missing required field: {field}"}), 400
+        
+        # Check if patient-medication link exists
+        cursor.execute(
+            "SELECT * FROM Patient_Medications WHERE PatientID = %s AND MedicationID = %s", 
+            (data["PatientID"], data["MedicationID"])
+        )
+        if not cursor.fetchone():
+            return jsonify({"error": "Patient-medication link not found"}), 404
+        
+        # Get current medication details including frequency amount
+        cursor.execute("SELECT RefillsLeft, FrequencyAmount FROM Medication WHERE MedicationID = %s", (data["MedicationID"],))
+        medication = cursor.fetchone()
+        if not medication:
+            return jsonify({"error": "Medication not found"}), 404
+        
+        current_refills = medication["RefillsLeft"] or 0
+        frequency_amount = medication["FrequencyAmount"] or 1
+        
+        if current_refills <= 0:
+            return jsonify({"error": "No refills left for this medication"}), 400
+        
+        # Decrease refills by frequency amount
+        new_refills = max(0, current_refills - frequency_amount)
+        cursor.execute(
+            "UPDATE Medication SET RefillsLeft = %s WHERE MedicationID = %s",
+            (new_refills, data["MedicationID"])
+        )
+        
+        db.get_db().commit()
+        cursor.close()
+        
+        return jsonify({
+            "message": f"Medication administered successfully (decreased by {frequency_amount} refills)", 
+            "remaining_refills": new_refills,
+            "decreased_by": frequency_amount
+        }), 200
+    except Error as e:
+        return jsonify({"error": str(e)}), 500
