@@ -95,10 +95,38 @@ def update_patient_vitals(patient_id, vitals_data):
         return False
 
 def update_patient_medications(patient_id, medication_data):
-    """Update patient medications"""
+    """Prescribe new medication to patient"""
     try:
-        response = requests.post(f"{API_BASE_URL}/medication/patient_medications", json=medication_data)
-        return response.status_code == 201
+        # First create the medication
+        medication_create_data = {
+            "PrescriptionName": medication_data["MedicationName"],
+            "DosageAmount": medication_data["DosageAmount"],
+            "DosageUnit": medication_data["DosageUnit"],
+            "PickUpLocation": medication_data["PickupLocation"],
+            "RefillsLeft": medication_data["RefillsLeft"],
+            "FrequencyAmount": medication_data["FrequencyAmount"],
+            "FrequencyPeriod": medication_data["FrequencyPeriod"]
+        }
+        
+        med_response = requests.post(f"{API_BASE_URL}/medication/medications", json=medication_create_data)
+        if med_response.status_code != 201:
+            return False
+        
+        # Get the created medication ID
+        medication_id = med_response.json().get("medication_id")
+        if not medication_id:
+            return False
+        
+        # Then link the medication to the patient
+        patient_med_data = {
+            "PatientID": patient_id,
+            "MedicationID": medication_id,
+            "PrescribedDate": medication_data["StartDate"],
+            "EndDate": medication_data["EndDate"]
+        }
+        
+        link_response = requests.post(f"{API_BASE_URL}/medication/patient_medications", json=patient_med_data)
+        return link_response.status_code == 201
     except:
         return False
 
@@ -399,23 +427,43 @@ def show_patient_medications():
     with st.form("new_medication"):
         col1, col2 = st.columns(2)
         with col1:
-            if all_meds:
-                medication_options = [f"{m.get('MedicationName', 'N/A')} - {m.get('Strength', 'N/A')}" for m in all_meds]
-                selected_med = st.selectbox("Select Medication", medication_options)
-            else:
-                selected_med = st.text_input("Medication Name", placeholder="e.g., Lisinopril")
-            
-            dosage = st.text_input("Dosage", placeholder="e.g., 10mg")
-            frequency = st.selectbox("Frequency", ["Once daily", "Twice daily", "Three times daily", "As needed"])
+            medication_name = st.text_input("Medication Name", placeholder="e.g., Aspirin", help="Enter the name of the medication to prescribe")
+            dosage_amount = st.number_input("Dosage Amount", min_value=0.0, step=0.1, placeholder="e.g., 10.0")
+            dosage_unit = st.selectbox("Dosage Unit", ["mg", "mcg", "g", "units", "ml", "tablets", "capsules"])
+            frequency_amount = st.number_input("Frequency Amount", min_value=1, value=1, help="How many times per period")
+            frequency_period = st.selectbox("Frequency Period", ["daily", "twice daily", "three times daily", "weekly", "as needed"])
         
         with col2:
+            pickup_location = st.text_input("Pickup Location", placeholder="e.g., Hospital Pharmacy", value="Hospital Pharmacy")
+            refills_left = st.number_input("Initial Refills", min_value=0, value=5, help="Number of refills to start with")
             start_date = st.date_input("Start Date", value=datetime.now().date())
             end_date = st.date_input("End Date", value=datetime.now().date())
             instructions = st.text_area("Instructions", placeholder="Take with food, avoid alcohol...")
         
         if st.form_submit_button("💾 Prescribe Medication"):
-            st.success("Medication prescribed successfully!")
-            st.info("Note: This would save to the API in a real implementation")
+            if medication_name and dosage_amount > 0:
+                # Create medication data
+                medication_data = {
+                    "PatientID": patient_id,
+                    "MedicationName": medication_name,
+                    "DosageAmount": dosage_amount,
+                    "DosageUnit": dosage_unit,
+                    "FrequencyAmount": frequency_amount,
+                    "FrequencyPeriod": frequency_period,
+                    "PickupLocation": pickup_location,
+                    "RefillsLeft": refills_left,
+                    "StartDate": start_date.isoformat(),
+                    "EndDate": end_date.isoformat() if end_date else None,
+                    "Instructions": instructions
+                }
+                
+                if update_patient_medications(patient_id, medication_data):
+                    st.success("Medication prescribed successfully!")
+                    st.rerun()
+                else:
+                    st.error("Failed to prescribe medication")
+            else:
+                st.error("Please enter a medication name and valid dosage amount")
 
 ## Run the main app
 if __name__ == "__main__":
