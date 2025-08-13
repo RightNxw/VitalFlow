@@ -36,7 +36,7 @@ def get_messages(doctor_id):
         return []
     except:
         st.warning("Could not connect to messages API, using dummy data.")
-        return [{"MessageID": 1, "Subject": "Patient Update", "Content": "Patient condition improved", "Priority": "Normal"}]
+        return [{"MessageID": 1, "Subject": "Patient Update", "Content": "Patient condition improved", "Priority": "Normal", "SentTime": "2024-01-15 10:30:00", "SenderType": "Nurse", "PostedBy": 1, "ReadStatus": False}]
  
 # Get messages for current doctor
 doctor_id = st.session_state.get('current_doctor_id', 1)
@@ -48,8 +48,8 @@ if not messages:
  
 # Display messages
 for message in messages:
-    with st.expander(f"📧 {message.get('Subject', 'No Subject')} - {message.get('Timestamp', 'N/A')}"):
-        st.markdown(f"**From:** {message.get('SenderType', 'Unknown')} {message.get('SenderID', 'N/A')}")
+    with st.expander(f"📧 {message.get('Subject', 'No Subject')} - {message.get('SentTime', 'N/A')}"):
+        st.markdown(f"**From:** {message.get('SenderType', 'Unknown')} {message.get('PostedBy', 'N/A')}")
         st.markdown(f"**Content:** {message.get('Content', 'No content')}")
         st.markdown(f"**Read:** {'Yes' if message.get('ReadStatus') else 'No'}")
         st.markdown(f"**Priority:** {message.get('Priority', 'Normal')}")
