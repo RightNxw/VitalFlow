@@ -417,19 +417,22 @@ def show_patient_medications():
     st.markdown("### Current Medications")
     if medications:
         for med in medications:
-            with st.expander(f"💊 {med.get('MedicationName', 'N/A')}"):
+            # Format dosage string
+            dosage_str = f"{med.get('DosageAmount', 'N/A')} {med.get('DosageUnit', '')}" if med.get('DosageAmount') else 'N/A'
+            # Format frequency string
+            frequency_str = f"{med.get('FrequencyAmount', 'N/A')} {med.get('FrequencyPeriod', '')}" if med.get('FrequencyAmount') else 'N/A'
+            
+            with st.expander(f"💊 {med.get('PrescriptionName', 'N/A')}"):
                 col1, col2 = st.columns([3, 1])
                 with col1:
                     st.markdown(f"""
-                    **Dosage:** {med.get('Dosage', 'N/A')}  
-                    **Frequency:** {med.get('Frequency', 'N/A')}  
-                    **Start Date:** {med.get('StartDate', 'N/A')}  
+                    **Dosage:** {dosage_str}  
+                    **Frequency:** {frequency_str}  
+                    **Start Date:** {med.get('PrescribedDate', 'N/A')}  
                     **End Date:** {med.get('EndDate', 'N/A')}  
-                    **Instructions:** {med.get('Instructions', 'N/A')}
+                    **Refills Left:** {med.get('RefillsLeft', 'N/A')}  
+                    **Pickup Location:** {med.get('PickUpLocation', 'N/A')}
                     """)
-                with col2:
-                    if st.button("❌ Remove", key=f"remove_{med.get('PatientMedicationID')}"):
-                        st.info("Remove functionality would be implemented here")
     else:
         st.info("No current medications")
     
