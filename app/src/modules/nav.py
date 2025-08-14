@@ -93,6 +93,27 @@ def NurseInboxNav():
 
 
 
+#### ------------------------ Patient Role ------------------------
+def PatientHomeNav():
+    st.sidebar.page_link("pages/50_Patient_Home.py", label="Home", icon="🏠")
+
+
+def PatientPortalNav():
+    st.sidebar.page_link("pages/50_Patient_Home.py", label="Portal", icon="❤️")
+
+
+def PatientBillingNav():
+    st.sidebar.page_link("pages/50_Patient_Home.py", label="Billing", icon="💰")
+
+
+def PatientInboxNav():
+    st.sidebar.page_link("pages/50_Patient_Home.py", label="Inbox", icon="📬")
+
+
+def PatientSettingsNav():
+    st.sidebar.page_link("pages/50_Patient_Home.py", label="Settings", icon="⚙️")
+
+
 # --------------------------------Links Function -----------------------------------------------
 def SideBarLinks(show_home=False):
     """
@@ -126,6 +147,28 @@ def SideBarLinks(show_home=False):
         if st.session_state["role"] == "doctor":
             DoctorHomeNav()
 
+ 
+        ## Show patient portal navigation if the user is a patient role.
+        if st.session_state["role"] == "patient":
+            PatientHomeNav()
+            PatientPortalNav()
+            PatientBillingNav()
+            PatientInboxNav()
+            PatientSettingsNav()
+ 
+        ## If the user role is usaid worker, show the Api Testing page
+        if st.session_state["role"] == "usaid_worker":
+            PredictionNav()
+            ApiTestNav()
+            ClassificationNav()
+            NgoDirectoryNav()
+            AddNgoNav()
+ 
+        ## If the user is an administrator, give them access to the administrator pages
+        if st.session_state["role"] == "administrator":
+            AdminPageNav()
+
+
         ## Show proxy portal navigation if the user is a proxy role.
         if st.session_state["role"] == "proxy":
             ProxyHomeNav()
@@ -133,6 +176,7 @@ def SideBarLinks(show_home=False):
         ## Show nurse portal navigation if the user is a nurse role.
         if st.session_state["role"] == "nurse":
             NurseHomeNav()
+
  
     ## Always show the About page at the bottom of the list of links
     AboutPageNav()

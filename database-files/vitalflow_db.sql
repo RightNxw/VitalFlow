@@ -103,7 +103,7 @@ CREATE TABLE IF NOT EXISTS Medication (
     PickUpLocation VARCHAR(100),
     RefillsLeft INTEGER,
     FrequencyAmount INTEGER,
-    FrequencyPeriod VARCHAR(20),
+    FrequencyPeriod VARCHAR(20)
 );
 
 CREATE TABLE IF NOT EXISTS Patient_Medications (
