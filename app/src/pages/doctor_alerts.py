@@ -9,20 +9,39 @@ import pandas as pd
 from datetime import datetime
 from streamlit_extras.app_logo import add_logo
 from modules.nav import SideBarLinks
- 
+<<<<<<< Updated upstream
+from modules.styles import apply_page_styling, create_metric_card, create_medical_divider
+=======
+from modules.styles import apply_page_styling, create_alert_card, create_medical_divider
+>>>>>>> Stashed changes
+
+## Apply medical theme and styling
+apply_page_styling()
+
 ## Add logo and navigation
 SideBarLinks()
- 
+
 ## Page config
-st.write("# Patient Alerts")
-st.write("View and manage patient alerts.")
- 
+
+# Medical-themed header
+st.markdown("""
+<div style="text-align: center; margin-bottom: 2rem;">
+    <h1 style="margin-bottom: 0.5rem;">⚠️ Patient Alerts</h1>
+    <p style="font-size: 1.2rem; color: var(--gray-600); margin: 0;">
+        View and manage patient alerts
+    </p>
+</div>
+""", unsafe_allow_html=True)
+
 ## API configuration
 API_BASE_URL = "http://web-api:4000"
 
+<<<<<<< Updated upstream
 ## Constants
 DEFAULT_DOCTOR_ID = 1
 
+=======
+>>>>>>> Stashed changes
 ## API functions
 def get_alerts(doctor_id):
     """Get alerts for specific doctor"""
@@ -45,6 +64,7 @@ def get_alerts(doctor_id):
             }
         ]
 
+<<<<<<< Updated upstream
 def ack_alert(alert_id, doctor_id):
     """Acknowledge an alert"""
     try:
@@ -72,11 +92,14 @@ def get_alert(alert_id):
     except:
         return None
 
+=======
+>>>>>>> Stashed changes
 ## Get alerts for current doctor
 doctor_id = st.session_state.get('current_doctor_id', DEFAULT_DOCTOR_ID)
 
 # Load data
 alerts = get_alerts(doctor_id)
+<<<<<<< Updated upstream
 df = pd.DataFrame(alerts)
 if not df.empty:
     if "SentTime" in df.columns:
@@ -86,22 +109,16 @@ if not df.empty:
 
 # Dashboard metrics
 metric_1, metric_2, metric_3 = st.columns(3)
-metric_1.metric("Total alerts", len(df) if not df.empty else 0)
-metric_2.metric(
-    "High urgency (≥4)",
-    int((df["UrgencyLevel"] >= 4).sum()) if not df.empty and "UrgencyLevel" in df.columns else 0,
-)
-metric_3.metric(
-    "Last alert",
-    "-" if df.empty or "SentTime" not in df.columns else df["SentTime"].max().strftime("%Y-%m-%d %H:%M"),
-)
+metric_1.markdown(create_metric_card("Total Alerts", len(df) if not df.empty else 0, "📊"), unsafe_allow_html=True)
+metric_2.markdown(create_metric_card("High Urgency (≥4)", int((df["UrgencyLevel"] >= 4).sum()) if not df.empty and "UrgencyLevel" in df.columns else 0, "⚠️"), unsafe_allow_html=True)
+metric_3.markdown(create_metric_card("Last Alert", "-" if df.empty or "SentTime" not in df.columns else df["SentTime"].max().strftime("%Y-%m-%d %H:%M"), "🕐"), unsafe_allow_html=True)
 
-st.divider()
+st.markdown(create_medical_divider(), unsafe_allow_html=True)
 
 left, right = st.columns([2, 1])
 
 with left:
-    st.subheader("Live Feed")
+    st.markdown("### 📊 Live Feed")
     f1, f2 = st.columns([3, 1])
     query = f1.text_input("Search")
     urgency = f2.selectbox("Urgency", ["All", "5", "4", "3", "2", "1"], index=0)
@@ -126,22 +143,23 @@ with left:
     selected_id = st.text_input("Select AlertID", value=str(sel_default))
     c1, c2 = st.columns(2)
     with c1:
-        if st.button("View") and int(selected_id) > 0:
-            st.session_state["selected_alert_id"] = int(selected_id)
-            st.rerun()
+        if st.button("View", use_container_width=True, type="primary"):
+            if int(selected_id) > 0:
+                st.session_state["selected_alert_id"] = int(selected_id)
+                st.rerun()
     with c2:
-        if st.button("Acknowledge", type="primary", disabled=(int(selected_id) <= 0)):
+        if st.button("Acknowledge", type="primary", use_container_width=True, disabled=(int(selected_id) <= 0)):
             if ack_alert(int(selected_id), int(doctor_id)):
                 st.success("Acknowledged")
                 st.rerun()
 
 with right:
-    st.subheader("Create Alert")
+    st.markdown("### ✨ Create Alert")
     with st.form("create_alert"):
-        msg = st.text_area("Message")
-        urg_val = st.slider("UrgencyLevel", 1, 5, 3)
-        proto = st.text_area("Protocol", "")
-        submit = st.form_submit_button("Create")
+        msg = st.text_area("Message", placeholder="Enter alert message...")
+        urg_val = st.slider("Urgency Level", 1, 5, 3)
+        proto = st.text_area("Protocol", placeholder="Enter protocol instructions...")
+        submit = st.form_submit_button("Create Alert", type="primary", use_container_width=True)
         if submit:
             if not msg.strip():
                 st.error("Message required")
@@ -156,30 +174,82 @@ with right:
                     "Protocol": proto.strip(),
                 })
                 if res is not None:
-                    st.success("Alert created")
+                    st.success("Alert created successfully!")
                     st.rerun()
 
-st.divider()
+st.markdown(create_medical_divider(), unsafe_allow_html=True)
 
-st.subheader("Selected Alert")
+st.markdown("### 📋 Selected Alert Details")
 sel_alert_id = st.session_state.get("selected_alert_id", 0)
 if sel_alert_id:
     detail = get_alert(int(sel_alert_id))
     if detail:
         left_col, right_col = st.columns([1, 1])
         with left_col:
-            st.write(f"AlertID: {detail.get('AlertID', '-')}")
-            st.write(f"Urgency: {detail.get('UrgencyLevel', '-')}")
-            st.write(f"Sent: {detail.get('SentTime', '-')}")
-            st.write(f"PostedBy: {detail.get('PostedBy', '-')}")
-            st.write(f"Role: {detail.get('PostedByRole', '-')}")
+            st.markdown(f"""
+            <div class="medical-card">
+                <strong>Alert ID:</strong> {detail.get('AlertID', '-')}<br>
+                <strong>Urgency:</strong> {detail.get('UrgencyLevel', '-')}<br>
+                <strong>Sent:</strong> {detail.get('SentTime', '-')}<br>
+                <strong>Posted By:</strong> {detail.get('PostedBy', '-')}<br>
+                <strong>Role:</strong> {detail.get('PostedByRole', '-')}
+            </div>
+            """, unsafe_allow_html=True)
         with right_col:
-            st.write("Message:")
-            st.write(detail.get('Message', '-'))
-            st.write("Protocol:")
-            st.write(detail.get('Protocol', '-'))
+            st.markdown(f"""
+            <div class="medical-card">
+                <strong>Message:</strong><br>
+                {detail.get('Message', '-')}<br><br>
+                <strong>Protocol:</strong><br>
+                {detail.get('Protocol', '-')}
+            </div>
+            """, unsafe_allow_html=True)
     else:
         st.error("Could not load alert details")
 else:
-    st.caption("Select an alert in the table to view details")
+    st.info("Select an alert in the table above to view details")
+=======
+
+if not alerts:
+    st.info("No active alerts at this time.")
+    st.stop()
+
+##  Display alerts
+for alert in alerts:
+    # Get urgency level with color coding
+    urgency = alert.get('UrgencyLevel', 1)
+    urgency_text = f"Level {urgency}"
+    urgency_color = "🔴" if urgency >= 4 else "🟡" if urgency >= 2 else "🟢"
+    
+    # Use the new alert card component
+    # Create a detailed description with all alert information
+    description = f"""
+    <strong>Message:</strong> {alert.get('Message', 'No message')}<br>
+    <strong>Protocol:</strong> {alert.get('Protocol', 'No protocol')}<br>
+    <strong>Posted By:</strong> {alert.get('PostedByRole', 'Unknown')} (ID: {alert.get('PostedBy', 'N/A')})<br>
+    <strong>Sent Time:</strong> {alert.get('SentTime', 'N/A')}
+    """
+    
+    # Determine severity class based on urgency level
+    severity_map = {5: "critical", 4: "critical", 3: "warning", 2: "warning", 1: "info"}
+    severity = severity_map.get(urgency, "info")
+    
+    st.markdown(create_alert_card(
+        title=f"{urgency_color} Alert #{alert.get('AlertID', 'N/A')} - {urgency_text}",
+        description=description,
+        severity=severity,
+        timestamp=alert.get('SentTime', 'N/A')
+    ), unsafe_allow_html=True)
+    
+    # Add action buttons below the card
+    col1, col2 = st.columns([1, 1])
+    with col1:
+        if st.button("✅ Acknowledge", key=f"ack_{alert.get('AlertID')}", use_container_width=True, type="primary"):
+            st.success("Alert acknowledged!")
+    with col2:
+        pass  # Removed View Details button
+    
+    # Add medical divider between alerts
+    st.markdown(create_medical_divider(), unsafe_allow_html=True)
+>>>>>>> Stashed changes
  

@@ -12,6 +12,9 @@ def HomeNav():
  
 def AboutPageNav():
     st.sidebar.page_link("pages/30_About.py", label="About", icon="🧠")
+
+
+
  
  
 #### ------------------------ Examples for Role of doctor ------------------------
@@ -176,7 +179,7 @@ def SideBarLinks(show_home=False):
             NurseHomeNav()
 
  
-    ## Always show the About page at the bottom of the list of links
+    ## Always show the About page
     AboutPageNav()
  
     if st.session_state["authenticated"]:

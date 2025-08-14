@@ -7,14 +7,10 @@ import requests
 from datetime import datetime
 from streamlit_extras.app_logo import add_logo
 from modules.nav import SideBarLinks
+from modules.styles import apply_page_styling, create_medical_divider
 
-## Page config - MUST be first Streamlit command
-st.set_page_config(
-    page_title="Patient Inbox",
-    page_icon="📬",
-    layout="wide",
-    initial_sidebar_state="expanded",
-)
+## Apply medical theme and styling
+apply_page_styling()
 
 ## Add logo and navigation
 SideBarLinks()
@@ -130,7 +126,15 @@ def create_message(subject, content, recipient_type, recipient_id, priority, sen
         return False
 
 ## Main page
-st.markdown("# 📬 Patient Messages & Communications")
+# Medical-themed header
+st.markdown("""
+<div style="text-align: center; margin-bottom: 2rem;">
+    <h1 style="margin-bottom: 0.5rem;">📬 Patient Messages & Communications</h1>
+    <p style="font-size: 1.2rem; color: var(--gray-600); margin: 0;">
+        View and manage your messages
+    </p>
+</div>
+""", unsafe_allow_html=True)
 
 # Get current patient ID from session state
 patient_id = st.session_state.get('current_patient_id', 1)
@@ -227,7 +231,7 @@ with col2:
             st.warning("Please fill in all required fields.")
 
 # Message Statistics
-st.markdown("---")
+st.markdown(create_medical_divider(), unsafe_allow_html=True)
 st.markdown("### 📊 Message Statistics")
 
 col1, col2, col3, col4 = st.columns(4)
@@ -249,7 +253,7 @@ with col4:
     st.metric("Urgent", urgent_count)
 
 # Quick Actions
-st.markdown("---")
+st.markdown(create_medical_divider(), unsafe_allow_html=True)
 st.markdown("### ⚡ Quick Actions")
 
 col1, col2, col3 = st.columns(3)

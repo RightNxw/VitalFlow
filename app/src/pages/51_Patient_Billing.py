@@ -7,14 +7,10 @@ import requests
 from datetime import datetime
 from streamlit_extras.app_logo import add_logo
 from modules.nav import SideBarLinks
+from modules.styles import apply_page_styling, create_metric_card, create_medical_divider
 
-## Page config - MUST be first Streamlit command
-st.set_page_config(
-    page_title="Patient Billing",
-    page_icon="💰",
-    layout="wide",
-    initial_sidebar_state="expanded",
-)
+## Apply medical theme and styling
+apply_page_styling()
 
 ## Add logo and navigation
 SideBarLinks()
@@ -66,7 +62,15 @@ def get_patient_condition(patient_id):
         return None
 
 ## Main page
-st.markdown("# 💰 Patient Billing & Insurance")
+# Medical-themed header
+st.markdown("""
+<div style="text-align: center; margin-bottom: 2rem;">
+    <h1 style="margin-bottom: 0.5rem;">💰 Patient Billing & Insurance</h1>
+    <p style="font-size: 1.2rem; color: var(--gray-600); margin: 0;">
+        View your billing information and insurance details
+    </p>
+</div>
+""", unsafe_allow_html=True)
 
 # Get current patient ID from session state
 patient_id = st.session_state.get('current_patient_id', 1)
@@ -94,28 +98,28 @@ col1, col2, col3 = st.columns(3)
 
 with col1:
     if insurance_info:
-        st.metric("Insurance Provider", insurance_info.get('InsuranceProvider', 'N/A'))
+        st.markdown(create_metric_card("Insurance Provider", insurance_info.get('InsuranceProvider', 'N/A'), "🏥"), unsafe_allow_html=True)
     else:
-        st.metric("Insurance Provider", "No Insurance")
+        st.markdown(create_metric_card("Insurance Provider", "No Insurance", "❌"), unsafe_allow_html=True)
 
 with col2:
     if insurance_info and insurance_info.get('Deductible'):
         try:
             # Convert to float and format properly
             deductible = float(insurance_info.get('Deductible', 0))
-            st.metric("Deductible", f"${deductible:,.2f}")
+            st.markdown(create_metric_card("Deductible", f"${deductible:,.2f}", "💰"), unsafe_allow_html=True)
         except (ValueError, TypeError):
-            st.metric("Deductible", insurance_info.get('Deductible', 'N/A'))
+            st.markdown(create_metric_card("Deductible", insurance_info.get('Deductible', 'N/A'), "💰"), unsafe_allow_html=True)
     else:
-        st.metric("Deductible", "$0.00")
+        st.markdown(create_metric_card("Deductible", "$0.00", "💰"), unsafe_allow_html=True)
 
 with col3:
     if visit_info:
-        st.metric("Current Visit", "Active")
+        st.markdown(create_metric_card("Current Visit", "Active", "✅"), unsafe_allow_html=True)
     else:
-        st.metric("Current Visit", "None")
+        st.markdown(create_metric_card("Current Visit", "None", "❌"), unsafe_allow_html=True)
 
-st.markdown("---")
+st.markdown(create_medical_divider(), unsafe_allow_html=True)
 
 # Insurance Details
 st.markdown("### 🏥 Insurance Details")
@@ -139,7 +143,7 @@ if insurance_info:
 else:
     st.info("No insurance information available for this patient")
 
-st.markdown("---")
+st.markdown(create_medical_divider(), unsafe_allow_html=True)
 
 # Visit Information for Billing Context
 st.markdown("### 🏥 Visit Information")
@@ -154,7 +158,7 @@ if visit_info:
 else:
     st.info("No current visit information available")
 
-st.markdown("---")
+st.markdown(create_medical_divider(), unsafe_allow_html=True)
 
 # Condition Information for Billing Context
 st.markdown("### 🏥 Medical Condition")
@@ -168,31 +172,9 @@ if condition_info:
 else:
     st.info("No condition information available")
 
-st.markdown("---")
+st.markdown(create_medical_divider(), unsafe_allow_html=True)
 
-# Billing Actions
-st.markdown("### 💳 Billing Actions")
 
-col1, col2 = st.columns(2)
-
-with col1:
-    if st.button("📋 Generate Bill", use_container_width=True):
-        st.info("Billing system integration would be implemented here")
-        if visit_info and insurance_info:
-            st.success(f"Bill generated for visit: {visit_info.get('AdmitReason', 'N/A')}")
-            st.info(f"Insurance: {insurance_info.get('InsuranceProvider', 'N/A')}")
-            try:
-                deductible = float(insurance_info.get('Deductible', 0))
-                st.info(f"Deductible remaining: ${deductible:,.2f}")
-            except (ValueError, TypeError):
-                st.info(f"Deductible remaining: {insurance_info.get('Deductible', 'N/A')}")
-
-with col2:
-    if st.button("📊 View Payment History", use_container_width=True):
-        st.info("Payment history would be displayed here")
-        st.info("This would show all previous payments and outstanding balances")
-
-st.markdown("---")
 
 # Cost Breakdown (if visit exists)
 if visit_info:
@@ -201,13 +183,13 @@ if visit_info:
     col1, col2, col3 = st.columns(3)
     
     with col1:
-        st.metric("Consultation Fee", "$150.00")
+        st.markdown(create_metric_card("Consultation Fee", "$150.00", "👨‍⚕️"), unsafe_allow_html=True)
     
     with col2:
-        st.metric("Lab Tests", "$75.00")
+        st.markdown(create_metric_card("Lab Tests", "$75.00", "🧪"), unsafe_allow_html=True)
     
     with col3:
-        st.metric("Total Estimated", "$225.00")
+        st.markdown(create_metric_card("Total Estimated", "$225.00", "💰"), unsafe_allow_html=True)
     
     if insurance_info:
         st.info(f"**Insurance Coverage:** {insurance_info.get('InsuranceProvider', 'N/A')} will cover 80% after deductible")

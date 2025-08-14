@@ -8,20 +8,23 @@ import requests
 from datetime import datetime
 from streamlit_extras.app_logo import add_logo
 from modules.nav import SideBarLinks
+from modules.styles import apply_page_styling, create_medical_divider
 
-## Page config - MUST be first Streamlit command
-st.set_page_config(
-    page_title="Proxy Portal - Patient Care",
-    page_icon="👥",
-    layout="wide",
-    initial_sidebar_state="expanded",
-)
+## Apply medical theme and styling
+apply_page_styling()
 
 ## Add logo and navigation
 SideBarLinks()
 
-st.write("# 👥 Patient Care Plan Portal")
-st.write("View and manage care plans for your dependent patients.")
+# Medical-themed header
+st.markdown("""
+<div style="text-align: center; margin-bottom: 2rem;">
+    <h1 style="margin-bottom: 0.5rem;">👥 Patient Care Plan Portal</h1>
+    <p style="font-size: 1.2rem; color: var(--gray-600); margin: 0;">
+        View and manage care plans for your dependent patients
+    </p>
+</div>
+""", unsafe_allow_html=True)
 
 # API configuration
 API_BASE_URL = "http://web-api:4000"

@@ -4,8 +4,10 @@ import pandas as pd
 from datetime import datetime
 import os
 from modules.nav import SideBarLinks
+from modules.styles import apply_page_styling, create_metric_card, create_medical_divider
 
-st.set_page_config(page_title="Nurse Dashboard", page_icon="👩‍⚕️", layout="wide")
+## Apply medical theme and styling
+apply_page_styling()
 
 API_BASE = os.getenv("API_BASE")
 DEFAULT_NURSE_ID = int(os.getenv("DEFAULT_NURSE_ID", "0") or 0)
@@ -81,7 +83,15 @@ def get_patients():
 
 SideBarLinks()
 
-st.title("Nurse Dashboard")
+# Medical-themed header
+st.markdown("""
+<div style="text-align: center; margin-bottom: 2rem;">
+    <h1 style="margin-bottom: 0.5rem;">👩‍⚕️ Nurse Dashboard</h1>
+    <p style="font-size: 1.2rem; color: var(--gray-600); margin: 0;">
+        Monitor patient alerts and manage care assignments
+    </p>
+</div>
+""", unsafe_allow_html=True)
 
 # Load data
 alerts = get_alerts(DEFAULT_NURSE_ID)
@@ -92,23 +102,43 @@ if not df_alerts.empty:
     df_alerts["SentTime"] = pd.to_datetime(df_alerts.get("SentTime", None), errors="coerce")
     df_alerts = df_alerts.sort_values(by=["UrgencyLevel", "SentTime"], ascending=[False, False])
 
+# Dashboard metrics with beautiful styling
+st.markdown("""
+<div style="text-align: center; margin: 2rem 0;">
+    <h2 style="margin-bottom: 0.5rem;">📊 Dashboard Overview</h2>
+    <p style="color: var(--gray-600); margin: 0;">Key metrics for patient care management</p>
+</div>
+""", unsafe_allow_html=True)
+
 with st.container():
     c1, c2, c3, c4 = st.columns(4)
     total_alerts = len(df_alerts) if not df_alerts.empty else 0
     high_urg = int((df_alerts["UrgencyLevel"] >= 4).sum()) if not df_alerts.empty and "UrgencyLevel" in df_alerts else 0
     last_alert_time = df_alerts["SentTime"].max() if not df_alerts.empty and "SentTime" in df_alerts else None
     my_patients = [p for p in patients if str(p.get("NurseID", "")) == str(DEFAULT_NURSE_ID)]
-    c1.metric("Alerts", total_alerts)
-    c2.metric("High urgency (≥4)", high_urg)
-    c3.metric("My patients", len(my_patients))
-    c4.metric("Last alert", "-" if not last_alert_time else last_alert_time.strftime("%Y-%m-%d %H:%M"))
+    
+    with c1:
+        st.markdown(create_metric_card(total_alerts, "Total Alerts", "⚠️", "primary"), unsafe_allow_html=True)
+    with c2:
+        st.markdown(create_metric_card(high_urg, "High Urgency (≥4)", "🚨", "danger"), unsafe_allow_html=True)
+    with c3:
+        st.markdown(create_metric_card(len(my_patients), "My Patients", "👥", "success"), unsafe_allow_html=True)
+    with c4:
+        last_alert_display = "-" if not last_alert_time else last_alert_time.strftime("%H:%M")
+        st.markdown(create_metric_card(last_alert_display, "Last Alert", "⏰", "warning"), unsafe_allow_html=True)
 
-st.divider()
+# Add medical divider
+st.markdown(create_medical_divider(), unsafe_allow_html=True)
 
 lc, rc = st.columns([2, 1])
 
 with lc:
-    st.subheader("Live Alerts")
+    st.markdown("""
+    <div style="margin: 1rem 0;">
+        <h3 style="color: var(--primary-blue); margin-bottom: 0.5rem;">🚨 Live Alerts</h3>
+        <p style="color: var(--gray-600); margin: 0;">Monitor and respond to patient alerts</p>
+    </div>
+    """, unsafe_allow_html=True)
     filter_col1, filter_col2 = st.columns([3, 1])
     q = filter_col1.text_input("Search", "")
     urg = filter_col2.selectbox("Urgency", ["All", "5", "4", "3", "2", "1"], index=0)
@@ -135,7 +165,12 @@ with lc:
                 st.rerun()
 
 with rc:
-    st.subheader("Create Alert")
+    st.markdown("""
+    <div style="margin: 1rem 0;">
+        <h3 style="color: var(--secondary-teal); margin-bottom: 0.5rem;">📝 Create Alert</h3>
+        <p style="color: var(--gray-600); margin: 0;">Generate new patient alerts</p>
+    </div>
+    """, unsafe_allow_html=True)
     with st.form("create_alert"):
         msg = st.text_area("Message", "")
         urg_val = st.slider("UrgencyLevel", 1, 5, 3)
@@ -159,9 +194,15 @@ with rc:
                     st.success("Alert created")
                     st.rerun()
 
-st.divider()
+# Add medical divider
+st.markdown(create_medical_divider(), unsafe_allow_html=True)
 
-st.subheader("Selected Alert")
+st.markdown("""
+<div style="margin: 1rem 0;">
+    <h3 style="color: var(--primary-blue); margin-bottom: 0.5rem;">📋 Selected Alert Details</h3>
+    <p style="color: var(--gray-600); margin: 0;">View detailed information for selected alert</p>
+</div>
+""", unsafe_allow_html=True)
 sel_alert_id = st.session_state.get("selected_alert_id", 0)
 if sel_alert_id:
     detail = get_alert(int(sel_alert_id))
@@ -170,9 +211,15 @@ if sel_alert_id:
 else:
     st.caption("Select an alert in the table to view details")
 
-st.divider()
+# Add medical divider
+st.markdown(create_medical_divider(), unsafe_allow_html=True)
 
-st.subheader("My Patients")
+st.markdown("""
+<div style="margin: 1rem 0;">
+    <h3 style="color: var(--accent-green); margin-bottom: 0.5rem;">👥 My Patients</h3>
+    <p style="color: var(--gray-600); margin: 0;">View assigned patient information</p>
+</div>
+""", unsafe_allow_html=True)
 mp = pd.DataFrame(my_patients)
 if mp.empty:
     st.write("No assigned patients.")

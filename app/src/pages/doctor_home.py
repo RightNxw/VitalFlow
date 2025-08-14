@@ -10,89 +10,26 @@ import requests
 from datetime import datetime
 from streamlit_extras.app_logo import add_logo
 from modules.nav import SideBarLinks
+from modules.styles import apply_page_styling, create_metric_card, create_patient_card, create_medical_divider
+ 
+## Apply medical theme and styling
+apply_page_styling()
  
 ## Add logo and navigation
 SideBarLinks()
  
-
-st.write("# Doctor Portal")
-st.write("Manage patients, view alerts, and access medical records.")
+# Medical-themed header
+st.markdown("""
+<div style="text-align: center; margin-bottom: 2rem;">
+    <h1 style="margin-bottom: 0.5rem;">👨‍⚕️ Doctor Portal</h1>
+    <p style="font-size: 1.2rem; color: var(--gray-600); margin: 0;">
+        Manage patients, view alerts, and access medical records
+    </p>
+</div>
+""", unsafe_allow_html=True)
  
 # API configuration
 API_BASE_URL = "http://web-api:4000"
- 
-# Custom CSS
-st.markdown(
-    """
-    <style>
-      #MainMenu {visibility: hidden;}
-      footer {visibility: hidden;}
-      [data-testid="stSidebar"] {width: 260px;}
-      [data-baseweb="radio"] > div {row-gap: .35rem;}
- 
-      .patient-card {
-        border: 2px solid #ddd;
-        border-radius: 8px;
-        padding: 16px;
-        margin: 12px 0;
-        display: flex;
-        align-items: center;
-        background: white;
-        cursor: pointer;
-        transition: all 0.3s ease;
-      }
- 
-      .patient-card:hover {
-        border-color: #0068c9;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        transform: translateY(-2px);
-      }
- 
-      .patient-avatar {
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        border: 2px solid #333;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-right: 20px;
-        font-size: 24px;
-        background: #f8f9fa;
-      }
- 
-      .patient-info {
-        flex-grow: 1;
-        line-height: 1.6;
-      }
- 
-      .patient-field {
-        margin: 4px 0;
-        font-weight: 500;
-      }
- 
-      .metric-card {
-        background: white;
-        padding: 20px;
-        border-radius: 8px;
-        border: 1px solid #e0e0e0;
-        text-align: center;
-      }
- 
-      .metric-value {
-        font-size: 2rem;
-        font-weight: bold;
-        color: #0068c9;
-      }
- 
-      .metric-label {
-        color: #666;
-        margin-top: 8px;
-      }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
 
 ## Patient card renderer with clickable functionality
 def render_patient_card(patient_data):
