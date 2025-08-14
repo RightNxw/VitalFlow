@@ -36,8 +36,10 @@ def get_patient_messages(patient_id):
         response = requests.get(f"{API_BASE_URL}/message/?user_type=patient&user_id={patient_id}")
         if response.status_code == 200:
             return response.json()
-        return []
-    except:
+        else:
+            st.error(f"❌ API Error: {response.status_code}")
+            return []
+    except Exception as e:
         st.warning("Could not connect to messages API, using dummy data.")
         return [
             {
@@ -125,6 +127,24 @@ def create_message(subject, content, recipient_type, recipient_id, priority, sen
     except Exception as e:
         return False
 
+def delete_message(message_id):
+    """Delete a message (acknowledge it)"""
+    try:
+        response = requests.delete(f"{API_BASE_URL}/message/messages/{message_id}")
+        if response.status_code == 200:
+            # Store success message in session state
+            st.session_state['delete_success'] = f"Message {message_id} acknowledged and deleted!"
+            return True
+        elif response.status_code == 404:
+            st.info("No data found for this message")
+            return False
+        else:
+            st.error(f"Failed to delete message: {response.status_code}")
+            return False
+    except:
+        st.error("Connection error - please try again")
+        return False
+
 ## Main page
 # Medical-themed header
 st.markdown("""
@@ -135,6 +155,12 @@ st.markdown("""
     </p>
 </div>
 """, unsafe_allow_html=True)
+
+# Display success message if exists
+if 'delete_success' in st.session_state:
+    st.success(st.session_state['delete_success'])
+    # Clear the message after displaying
+    del st.session_state['delete_success']
 
 # Get current patient ID from session state
 patient_id = st.session_state.get('current_patient_id', 1)
@@ -150,7 +176,7 @@ patient_name = f"{patient_info.get('FirstName', 'Unknown')} {patient_info.get('L
 messages = get_patient_messages(patient_id)
 
 # Create two columns for inbox and compose
-col1, col2 = st.columns([2, 1])
+col1, col2 = st.columns([1.5, 1])  # Give compose section more space
 
 with col1:
     st.markdown("### 📥 Inbox")
@@ -165,6 +191,17 @@ with col1:
                 st.markdown(f"**Content:** {message.get('Content', 'No content')}")
                 st.markdown(f"**Read:** {'Yes' if message.get('ReadStatus') else 'No'}")
                 st.markdown(f"**Priority:** {message.get('Priority', 'Normal')}")
+                
+                # Add acknowledge/delete button
+                col1_inner, col2_inner = st.columns([3, 1])
+                with col1_inner:
+                    st.markdown(f"**Message ID:** {message.get('MessageID', 'N/A')}")
+                with col2_inner:
+                    if st.button("✅ Acknowledge", key=f"ack_{message.get('MessageID')}", use_container_width=True):
+                        if delete_message(message.get('MessageID')):
+                            st.rerun()
+                        else:
+                            st.error("Failed to delete message")
 
 with col2:
     st.markdown("### ✉️ Compose Message")
