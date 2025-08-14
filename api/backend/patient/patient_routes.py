@@ -176,18 +176,18 @@ def get_patient_vitals(patient_id):
         if not cursor.fetchone():
             return jsonify({"error": "Patient not found"}), 404
         
-        # Get patient's current vitals
+        # Get patient's current vitals - return all vitals for the patient
         query = """
         SELECT v.* FROM VitalChart v
         JOIN Patient p ON v.VitalID = p.VitalID
         WHERE p.PatientID = %s
         """
         cursor.execute(query, (patient_id,))
-        vitals = cursor.fetchone()
+        vitals = cursor.fetchall()
         cursor.close()
         
         if not vitals:
-            return jsonify({"message": "No vitals found for this patient"}), 404
+            return jsonify([]), 200  # Return empty list instead of error
             
         return jsonify(vitals), 200
     except Error as e:
@@ -196,7 +196,7 @@ def get_patient_vitals(patient_id):
 
 # Get patient's condition (via Patient.ConditionID FK)
 # Available to Doctor-1.1 and Proxy-4.3
-@patients.route("/patients/<int:patient_id>/condition", methods=["GET"])
+@patients.route("/<int:patient_id>/condition", methods=["GET"])
 def get_patient_condition(patient_id):
     try:
         cursor = db.get_db().cursor()

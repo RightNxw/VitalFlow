@@ -57,16 +57,33 @@ def get_patient_details(patient_id):
         
         # Get patient vitals
         vitals_response = requests.get(f"{API_BASE_URL}/patient/{patient_id}/vitals")
-        vitals = vitals_response.json() if vitals_response.status_code == 200 else []
+        if vitals_response.status_code == 200:
+            vitals = vitals_response.json()
+            # Ensure vitals is a list
+            if not isinstance(vitals, list):
+                vitals = []
+        else:
+            vitals = []
         
         # Get patient medications
         meds_response = requests.get(f"{API_BASE_URL}/patient/{patient_id}/medications")
         medications = meds_response.json() if meds_response.status_code == 200 else []
         
+        # Get patient conditions
+        conditions_response = requests.get(f"{API_BASE_URL}/patient/{patient_id}/condition")
+        if conditions_response.status_code == 200:
+            conditions = conditions_response.json()
+            # Ensure conditions is a list
+            if not isinstance(conditions, list):
+                conditions = [conditions] if conditions else []
+        else:
+            conditions = []
+        
         return {
             'patient': patient,
             'vitals': vitals,
-            'medications': medications
+            'medications': medications,
+            'conditions': conditions
         }
     except:
         return None
@@ -223,6 +240,7 @@ def show_patient_details():
     patient = patient_data['patient']
     vitals = patient_data['vitals']
     medications = patient_data['medications']
+    conditions = patient_data['conditions']
     
     # Header with back button
     col1, col2 = st.columns([4, 1])
@@ -234,7 +252,7 @@ def show_patient_details():
             st.rerun()
     
     # Patient information tabs
-    tab1, tab2 = st.tabs(["📋 Basic Info", "❤️ Vital Signs/Update"])
+    tab1, tab2, tab3, tab4 = st.tabs(["📋 Basic Info", "❤️ Vital Signs", "🏥 Medical Conditions", "💊 Medications"])
     
     with tab1:
         st.markdown("### Basic Information")
@@ -260,11 +278,13 @@ def show_patient_details():
     
     with tab2:
 
-        st.markdown("### Vital Signs/Update")
-
         st.markdown("### Vital Signs")
-        if vitals:
+        if vitals and isinstance(vitals, list):
             for vital in vitals:
+                # Ensure vital is a dictionary
+                if not isinstance(vital, dict):
+                    continue
+                    
                 # Safe timestamp handling
                 timestamp = vital.get('Timestamp', 'N/A')
                 if timestamp and timestamp != 'N/A':
@@ -376,35 +396,20 @@ def show_patient_chart():
             oxygen_saturation = st.number_input("Oxygen Saturation (%)", min_value=70, max_value=100, value=98)
             timestamp = st.datetime_input("Timestamp", value=datetime.now())
 
-        
-        # Display current vitals from database
-      
-        
-        # Add new vitals form
-        st.markdown("#### Update Vitals")
-        with st.form(f"update_vitals_{patient_id}"):
-            col1, col2 = st.columns(2)
-            with col1:
-                heart_rate = st.number_input("Heart Rate (bpm)", min_value=0, max_value=300, value=72)
-                blood_pressure = st.text_input("Blood Pressure", placeholder="120/80")
-            with col2:
-                temperature = st.number_input("Temperature (°F)", min_value=90.0, max_value=110.0, value=98.6, step=0.1)
-                respiratory_rate = st.number_input("Respiratory Rate (/min)", min_value=0, max_value=60, value=16)
+        if st.form_submit_button("💾 Add New Vitals"):
+            new_vitals = {
+                "PatientID": patient_id,
+                "HeartRate": heart_rate,
+                "BloodPressure": blood_pressure,
+                "Temperature": temperature,
+                "RespiratoryRate": respiratory_rate
+            }
             
-            if st.form_submit_button("💾 Update Vitals"):
-                new_vitals = {
-                    "PatientID": patient_id,
-                    "HeartRate": heart_rate,
-                    "BloodPressure": blood_pressure,
-                    "Temperature": temperature,
-                    "RespiratoryRate": respiratory_rate
-                }
-                
-                if update_patient_vitals(patient_id, new_vitals):
-                    st.success("Vitals updated successfully!")
-                    st.rerun()
-                else:
-                    st.info("Note: Vitals update API endpoint not implemented yet")
+            if update_patient_vitals(patient_id, new_vitals):
+                st.success("Vitals added successfully!")
+                st.rerun()
+            else:
+                st.error("Failed to add vitals")
 
 def show_patient_medications():
     """Show and manage patient medications"""
