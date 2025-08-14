@@ -208,7 +208,7 @@ INSERT INTO Doctor (FirstName, LastName, Specialty, YearOfExperience) VALUES
 ('Thomas', 'Wilson', 'General Surgery', 22);
 
 INSERT INTO Nurse (FirstName, LastName) VALUES
-('Amy', 'Thompson'),
+('Nic', 'Nevin'),
 ('John', 'Miller'),
 ('Patricia', 'Jones'),
 ('Kevin', 'Taylor'),
@@ -278,7 +278,7 @@ INSERT INTO `Condition` (Description, Treatment) VALUES
 ('Angina pectoris', 'Nitroglycerin, beta blockers, lifestyle modifications'),
 ('Normal pediatric development', 'Continue routine vaccinations'),
 ('Fractured lateral malleolus', 'Cast immobilization for 6 weeks, physical therapy'),
-('Chronic migraine', 'Preventive medication, trigger avoidance'),
+('Concussion', 'Rest, avoid further head trauma'),
 ('Severe osteoarthritis of knee', 'Total knee replacement recommended'),
 ('Stage II breast cancer', 'Chemotherapy, radiation therapy'),
 ('Major depressive disorder', 'Antidepressants, cognitive behavioral therapy'),
@@ -308,7 +308,7 @@ INSERT INTO Discharge (DischargeDate, Instructions) VALUES
 ('2024-07-01', 'Isolate for 5 days. Rest and hydrate. Return if symptoms worsen.');
 
 INSERT INTO Patient (FirstName, LastName, DOB, Weight, BloodType, PreExisting, InsuranceID, DischargeID, ConditionID, DoctorID, NurseID, VitalID, VisitID) VALUES
-('Alice', 'Smith', '1980-05-15', 145.5, 'O+', FALSE, 11, 1, 1, 2, 1, 1, 1),
+('Joe', 'Pesci', '1980-05-15', 145.5, 'O+', FALSE, 11, 10, 5, 2, 1, 1, 5),
 ('Bob', 'Johnson', '1955-08-22', 182.0, 'A+', TRUE, 12, 2, 2, 1, 2, 2, 2),
 ('Charlie', 'Williams', '2018-12-10', 42.5, 'B+', FALSE, 3, 3, 3, 3, 3, 3, 3),
 ('Diana', 'Brown', '1992-03-18', 130.0, 'AB+', FALSE, 13, 4, 4, 6, 4, 4, 4),
@@ -325,17 +325,17 @@ INSERT INTO Patient (FirstName, LastName, DOB, Weight, BloodType, PreExisting, I
 ('Oliver', 'Martin', '1978-05-22', 188.0, 'B-', FALSE, 5, 15, 15, 2, 5, 15, 15);
 
 INSERT INTO Proxy (PatientID, FirstName, LastName, Relationship) VALUES
-(3, 'Nina', 'Pesci', 'Spouse'),
+(1, 'Nina', 'Pesci', 'Daughter'),
 (3, 'John', 'Williams', 'Father'),
 (6, 'Robert', 'Miller', 'Son'),
 (7, 'Lisa', 'Wilson', 'Daughter'),
 (8, 'Mark', 'Moore', 'Spouse'),
-(1, 'Nina', 'Pesci', 'Daughter'),
-(2, 'Nina', 'Pesci', 'Daughter'),
+(4, 'Ryan', 'Moochi', 'Daughter'),
+(2, 'Thomas', 'Jefferson', 'spouse'),
 (4, 'Nina', 'Pesci', 'Sister'),
-(5, 'Nina', 'Pesci', 'Sister'),
-(9, 'Nina', 'Pesci', 'Aunt'),
-(10, 'Nina', 'Pesci', 'Aunt');
+(5, 'Micheal', 'Jord', 'Brother'),
+(9, 'Willow', 'Hindon', 'Aunt'),
+(10, 'Arthur', 'Morely', 'Son');
 
 INSERT INTO Medication (PrescriptionName, DosageAmount, DosageUnit, PickUpLocation, RefillsLeft, FrequencyAmount, FrequencyPeriod) VALUES
 ('Lisinopril', 10, 'mg', 'CVS Pharmacy - Main St', 5, 1, 'daily'),
