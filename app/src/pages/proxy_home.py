@@ -214,11 +214,6 @@ if proxies:
 else:
     st.markdown("### Welcome, Nina Pesci")
 
-## Search bar
-top_left, top_spacer, top_right = st.columns([6, 1, 1])
-with top_left:
-    global_search = st.text_input("Search", placeholder="Search patients, insurance, billing...", label_visibility="visible")
-
 ## Patient card renderer
 def render_patient_card(patient_data):
     """Render a patient card with simplified information"""
