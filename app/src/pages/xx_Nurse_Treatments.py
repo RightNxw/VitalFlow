@@ -84,15 +84,16 @@ st.title("Treatments")
 
 top_l, top_r = st.columns([3, 1])
 with top_l:
+    q = st.text_input("Search name, blood type…")
     only_mine = st.checkbox("Only my patients", value=True)
     refresh = st.button("Refresh")
 with top_r:
-    nurse_id = st.number_input("NurseID", min_value=1, step=1, value=int(DEFAULT_NURSE_ID))
+    pass  # Removed NurseID input since we know which nurse is logged in
 
 patients = list_patients() if (refresh or True) else []
 df_pat = pd.DataFrame(patients)
 if only_mine and not df_pat.empty and "NurseID" in df_pat.columns:
-    df_pat = df_pat[df_pat["NurseID"].astype(str) == str(int(nurse_id))]
+    df_pat = df_pat[df_pat["NurseID"].astype(str) == str(int(DEFAULT_NURSE_ID))]
 
 # Patient selector
 options = []

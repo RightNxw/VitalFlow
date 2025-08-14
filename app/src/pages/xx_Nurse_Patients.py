@@ -81,14 +81,14 @@ with ctrl_l:
     only_mine = st.checkbox("Only my patients", value=True)
     refresh = st.button("Refresh")
 with ctrl_r:
-    nurse_id = st.number_input("NurseID", min_value=1, step=1, value=int(DEFAULT_NURSE_ID))
+    pass  # Removed NurseID input since we know which nurse is logged in
 
 patients = list_patients() if (refresh or True) else []
 df = pd.DataFrame(patients)
 if not df.empty:
     # Filters
     if only_mine and "NurseID" in df.columns:
-        df = df[df["NurseID"].astype(str) == str(int(nurse_id))]
+        df = df[df["NurseID"].astype(str) == str(int(DEFAULT_NURSE_ID))]
     if q:
         ql = q.lower()
         cols = [c for c in ["FirstName", "LastName", "BloodType"] if c in df.columns]
@@ -109,8 +109,8 @@ with left:
     st.dataframe(df[show_cols] if not df.empty else pd.DataFrame(columns=show_cols), use_container_width=True, hide_index=True)
 
     sel_default = int(df["PatientID"].iloc[0]) if not df.empty and "PatientID" in df.columns else 0
-    selected_id = st.number_input("Select PatientID", min_value=0, step=1, value=sel_default)
-    if st.button("Open") and selected_id > 0:
+    selected_id = st.text_input("Select PatientID", value=str(sel_default))
+    if st.button("Open") and int(selected_id) > 0:
         st.session_state["selected_patient_id"] = int(selected_id)
         st.rerun()
 

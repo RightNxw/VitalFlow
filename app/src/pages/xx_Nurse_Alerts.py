@@ -93,12 +93,10 @@ with ctrl_l:
     auto_refresh = st.checkbox("Auto refresh", value=False)
     refresh = st.button("Refresh")
 with ctrl_r:
-    nurse_id = st.number_input(
-        "NurseID", min_value=1, step=1, value=int(DEFAULT_NURSE_ID)
-    )
+    pass  # Removed NurseID input since we know which nurse is logged in
 
 # Load data
-alerts = list_alerts(int(nurse_id)) if (refresh or True) else []
+alerts = list_alerts(DEFAULT_NURSE_ID) if (refresh or True) else []
 df = pd.DataFrame(alerts)
 if not df.empty:
     if "SentTime" in df.columns:
@@ -144,15 +142,15 @@ with left:
     )
 
     sel_default = int(view["AlertID"].iloc[0]) if not view.empty and "AlertID" in view.columns else 0
-    selected_id = st.number_input("Select AlertID", min_value=0, step=1, value=sel_default)
+    selected_id = st.text_input("Select AlertID", value=str(sel_default))
     c1, c2 = st.columns(2)
     with c1:
-        if st.button("View") and selected_id > 0:
+        if st.button("View") and int(selected_id) > 0:
             st.session_state["selected_alert_id"] = int(selected_id)
             st.rerun()
     with c2:
-        if st.button("Acknowledge", type="primary", disabled=(selected_id <= 0)):
-            if ack_alert(int(selected_id), int(nurse_id)):
+        if st.button("Acknowledge", type="primary", disabled=(int(selected_id) <= 0)):
+            if ack_alert(int(selected_id), DEFAULT_NURSE_ID):
                 st.success("Acknowledged")
                 st.rerun()
 
@@ -162,7 +160,6 @@ with right:
         msg = st.text_area("Message")
         urg_val = st.slider("UrgencyLevel", 1, 5, 3)
         proto = st.text_area("Protocol", "")
-        posted_role = st.text_input("PostedByRole", "nurse")
         submit = st.form_submit_button("Create")
         if submit:
             if not msg.strip():
@@ -172,8 +169,8 @@ with right:
                 res = create_alert({
                     "Message": msg.strip(),
                     "SentTime": now_str,
-                    "PostedBy": int(nurse_id),
-                    "PostedByRole": posted_role.strip() or "nurse",
+                    "PostedBy": DEFAULT_NURSE_ID,
+                    "PostedByRole": "Nurse",  # Hardcoded since we know it's a nurse
                     "UrgencyLevel": int(urg_val),
                     "Protocol": proto.strip(),
                 })
