@@ -325,7 +325,7 @@ INSERT INTO Patient (FirstName, LastName, DOB, Weight, BloodType, PreExisting, I
 ('Oliver', 'Martin', '1978-05-22', 188.0, 'B-', FALSE, 5, 15, 15, 2, 5, 15, 15);
 
 INSERT INTO Proxy (PatientID, FirstName, LastName, Relationship) VALUES
-(3, 'Sarah', 'Williams', 'Mother'),
+(3, 'Nina', 'Pesci', 'Spouse'),
 (3, 'John', 'Williams', 'Father'),
 (6, 'Robert', 'Miller', 'Son'),
 (7, 'Lisa', 'Wilson', 'Daughter'),
