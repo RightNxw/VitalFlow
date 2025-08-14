@@ -115,7 +115,7 @@ dependent_patients = get_proxy_patients(proxy_id)
 
 if dependent_patients:
     for patient in dependent_patients:
-        with st.expander(f"🏥 {patient.get('FirstName', '')} {patient.get('LastName', '')} - Care Plan", expanded=True):
+        with st.expander(f"{patient.get('FirstName', '')} {patient.get('LastName', '')} - Care Plan", expanded=True):
             patient_details = get_patient_details(patient.get('PatientID'))
             
             if patient_details:
@@ -131,59 +131,30 @@ if dependent_patients:
                     **Emergency Contact:** {patient_info.get('EmergencyContact', 'N/A')}
                     """)
                     
-                    # Patient vitals summary
-                    vitals = patient_details.get('vitals', [])
-                    if vitals:
-                        latest_vitals = vitals[-1] if len(vitals) > 0 else {}
-                        st.markdown("### 💓 Latest Vitals")
-                        st.markdown(f"""
-                        **Heart Rate:** {latest_vitals.get('HeartRate', 'N/A')} bpm
-                        **Blood Pressure:** {latest_vitals.get('BloodPressure', 'N/A')}
-                        **Temperature:** {latest_vitals.get('Temperature', 'N/A')}°F
-                        **Oxygen Saturation:** {latest_vitals.get('OxygenSaturation', 'N/A')}%
-                        """)
-                
                 with col2:
                     st.markdown("### 💊 Current Medications")
                     medications = patient_details.get('medications', [])
                     if medications:
-                        for med in medications:
-                            st.markdown(f"""
-                            **{med.get('MedicationName', 'N/A')}**
-                            - Dosage: {med.get('Dosage', 'N/A')}
-                            - Frequency: {med.get('Frequency', 'N/A')}
-                            - Prescribed: {med.get('PrescribedDate', 'N/A')}
-                            """)
+                        # Create DataFrame for better display
+                        df_m = pd.DataFrame(medications)
+                        if not df_m.empty:
+                            # Friendly column order if present
+                            order = [
+                                "PrescriptionName", "DosageAmount", "DosageUnit", "FrequencyAmount", "FrequencyPeriod",
+                                "PickUpLocation", "RefillsLeft", "PrescribedDate", "EndDate", "MedicationID"
+                            ]
+                            cols = [c for c in order if c in df_m.columns]
+                            # Ensure date-like columns render nicely
+                            for c in ["PrescribedDate", "EndDate"]:
+                                if c in df_m.columns:
+                                    df_m[c] = pd.to_datetime(df_m[c], errors="coerce").dt.date
+                            
+                            st.dataframe(df_m[cols] if cols else df_m, use_container_width=True, hide_index=True)
+                        else:
+                            st.info("No medications found")
                     else:
                         st.info("No current medications")
                     
-                    st.markdown("### ⚠️ Active Conditions")
-                    conditions = patient_details.get('conditions', [])
-                    if conditions:
-                        for condition in conditions:
-                            st.markdown(f"""
-                            **{condition.get('Condition', 'N/A')}**
-                            - Severity: {condition.get('Severity', 'N/A')}
-                            - Status: {condition.get('Status', 'N/A')}
-                            """)
-                    else:
-                        st.info("No active conditions")
-                
-                # Care plan actions
-                st.markdown("---")
-                action_col1, action_col2, action_col3 = st.columns(3)
-                
-                with action_col1:
-                    if st.button("📊 View Full Chart", key=f"chart_{patient.get('PatientID')}", use_container_width=True):
-                        st.info(f"Full medical chart for {patient.get('FirstName', 'Patient')}")
-                
-                with action_col2:
-                    if st.button("📅 Schedule Appointment", key=f"appt_{patient.get('PatientID')}", use_container_width=True):
-                        st.info(f"Appointment scheduling for {patient.get('FirstName', 'Patient')}")
-                
-                with action_col3:
-                    if st.button("📞 Contact Care Team", key=f"contact_{patient.get('PatientID')}", use_container_width=True):
-                        st.info(f"Contact care team for {patient.get('FirstName', 'Patient')}")
             
             st.divider()
 else:
