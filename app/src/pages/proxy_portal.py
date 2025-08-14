@@ -30,7 +30,7 @@ API_BASE_URL = "http://web-api:4000"
 def get_proxies():
     """Get all proxies from API"""
     try:
-        response = requests.get(f"{API_BASE_URL}/proxies")
+        response = requests.get(f"{API_BASE_URL}/proxy/")
         if response.status_code == 200:
             return response.json()
         return []
@@ -41,7 +41,7 @@ def get_proxies():
 def get_proxy_patients(proxy_id):
     """Get patients for specific proxy"""
     try:
-        response = requests.get(f"{API_BASE_URL}/proxies/{proxy_id}/patients")
+        response = requests.get(f"{API_BASE_URL}/proxy/{proxy_id}/patients")
         if response.status_code == 200:
             return response.json()
         return []
@@ -55,7 +55,7 @@ def get_proxy_patients(proxy_id):
 def get_patient_details(patient_id):
     """Get detailed patient information"""
     try:
-        patient_response = requests.get(f"{API_BASE_URL}/patient/patients/{patient_id}")
+        patient_response = requests.get(f"{API_BASE_URL}/patient/{patient_id}")
         if patient_response.status_code != 200:
             return None
 
@@ -63,21 +63,21 @@ def get_patient_details(patient_id):
 
         # Get patient vitals
         try:
-            vitals_response = requests.get(f"{API_BASE_URL}/patient/patients/{patient_id}/vitals")
+            vitals_response = requests.get(f"{API_BASE_URL}/patient/{patient_id}/vitals")
             vitals = vitals_response.json() if vitals_response.status_code == 200 else []
         except:
             vitals = []
 
         # Get patient conditions
         try:
-            conditions_response = requests.get(f"{API_BASE_URL}/patient/patients/{patient_id}/condition")
+            conditions_response = requests.get(f"{API_BASE_URL}/patient/{patient_id}/condition")
             conditions = conditions_response.json() if conditions_response.status_code == 200 else []
         except:
             conditions = []
 
         # Get patient medications
         try:
-            meds_response = requests.get(f"{API_BASE_URL}/patient/patients/{patient_id}/medications")
+            meds_response = requests.get(f"{API_BASE_URL}/patient/{patient_id}/medications")
             medications = meds_response.json() if meds_response.status_code == 200 else []
         except:
             medications = []

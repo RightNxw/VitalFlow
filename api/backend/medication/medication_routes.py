@@ -8,7 +8,7 @@ medications = Blueprint("medications", __name__)
 
 
 # Get all medications
-@medications.route("/medications", methods=["GET"])
+@medications.route("/", methods=["GET"])
 def get_all_medications():
     try:
         current_app.logger.info('Starting get_all_medications request')
@@ -27,7 +27,7 @@ def get_all_medications():
 
 # Create a new medication
 # Available to Doctor-1.3
-@medications.route("/medications", methods=["POST"])
+@medications.route("/", methods=["POST"])
 def create_medication():
     try:
         data = request.get_json()
@@ -67,9 +67,8 @@ def create_medication():
         return jsonify({"error": str(e)}), 500
 
 
-# Get a specific medication with all details
-# Available to Patient-3.5 and Proxy-4.4
-@medications.route("/medications/<int:medication_id>", methods=["GET"])
+# Get details for a specific medication
+@medications.route("/<int:medication_id>", methods=["GET"])
 def get_medication(medication_id):
     try:
         cursor = db.get_db().cursor()
@@ -86,9 +85,9 @@ def get_medication(medication_id):
         return jsonify({"error": str(e)}), 500
 
 
-# Get all patient-medication links
-@medications.route("/patient-medication", methods=["GET"])
-def get_all_patient_medications():
+# Get patient-medication relationships
+@medications.route("/patient_medications", methods=["GET"])
+def get_patient_medications():
     try:
         current_app.logger.info('Starting get_all_patient_medications request')
         cursor = db.get_db().cursor()
@@ -104,9 +103,9 @@ def get_all_patient_medications():
         return jsonify({"error": str(e)}), 500
 
 
-# Link patient to medication
+# Link a patient to a medication
 # Available to Doctor-1.3
-@medications.route("/patient-medication", methods=["POST"])
+@medications.route("/patient_medications", methods=["POST"])
 def link_patient_medication():
     try:
         data = request.get_json()

@@ -26,7 +26,7 @@ API_BASE_URL = "http://web-api:4000"
 def get_patient_info(patient_id):
     """Get patient information from database"""
     try:
-        response = requests.get(f"{API_BASE_URL}/patient/patients/{patient_id}")
+        response = requests.get(f"{API_BASE_URL}/patient/{patient_id}")
         if response.status_code == 200:
             return response.json()
         return None
@@ -37,7 +37,7 @@ def get_patient_info(patient_id):
 def get_patient_visit(patient_id):
     """Get patient's current visit from database"""
     try:
-        response = requests.get(f"{API_BASE_URL}/patient/patients/{patient_id}/visit")
+        response = requests.get(f"{API_BASE_URL}/patient/{patient_id}/visit")
         if response.status_code == 200:
             return response.json()
         return None
@@ -47,7 +47,7 @@ def get_patient_visit(patient_id):
 def get_patient_vitals(patient_id):
     """Get patient's current vitals from database"""
     try:
-        response = requests.get(f"{API_BASE_URL}/patient/patients/{patient_id}/vitals")
+        response = requests.get(f"{API_BASE_URL}/patient/{patient_id}/vitals")
         if response.status_code == 200:
             return response.json()
         return None
@@ -57,7 +57,7 @@ def get_patient_vitals(patient_id):
 def get_patient_medications(patient_id):
     """Get patient's medications from database"""
     try:
-        response = requests.get(f"{API_BASE_URL}/patient/patients/{patient_id}/medications")
+        response = requests.get(f"{API_BASE_URL}/patient/{patient_id}/medications")
         if response.status_code == 200:
             return response.json()
         return []
@@ -71,13 +71,13 @@ def create_new_visit(patient_id, admit_reason, appointment_date):
             "AdmitReason": admit_reason,
             "AppointmentDate": appointment_date.isoformat()
         }
-        response = requests.post(f"{API_BASE_URL}/visits/visits", json=visit_data)
+        response = requests.post(f"{API_BASE_URL}/visit/", json=visit_data)
         if response.status_code == 201:
             visit_id = response.json().get("visit_id")
             if visit_id:
                 # Link the visit to the patient
                 update_data = {"VisitID": visit_id}
-                update_response = requests.put(f"{API_BASE_URL}/patient/patients/{patient_id}", json=update_data)
+                update_response = requests.put(f"{API_BASE_URL}/patient/{patient_id}", json=update_data)
                 if update_response.status_code == 200:
                     return True
         return False

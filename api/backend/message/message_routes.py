@@ -10,7 +10,7 @@ messages = Blueprint("messages", __name__)
 
 # Get messages for a user (accessible via MessagePatients, MessageDoctor, or MessageNurse)
 # Available to Patient-3.1, Doctor-1.5, Doctor-1.6, Nurse-2.6
-@messages.route("/messages", methods=["GET"])
+@messages.route("/", methods=["GET"])
 def get_messages():
     try:
         current_app.logger.info('Starting get_messages request')
@@ -61,7 +61,7 @@ def get_messages():
 
 # Create message
 # Available to Patient-3.3, Doctor-1.5, Doctor-1.6, Nurse-2.6
-@messages.route("/messages", methods=["POST"])
+@messages.route("/", methods=["POST"])
 def create_message():
     try:
         data = request.get_json()

@@ -34,12 +34,10 @@ if DEFAULT_NURSE_ID == 0:
 def list_alerts(nurse_id: int):
     try:
         r = requests.get(
-            f"{API_BASE}/alerts",
-            params={"user_type": "nurse", "user_id": nurse_id},
-            timeout=10,
+            f"{API_BASE}/alert/?user_type=nurse&user_id={nurse_id}", timeout=10
         )
         if r.status_code != 200:
-            st.error(f"GET /alerts → {r.status_code}")
+            st.error(f"GET /alert/ → {r.status_code}")
             return []
         return r.json() or []
     except requests.exceptions.RequestException as ex:
@@ -49,9 +47,9 @@ def list_alerts(nurse_id: int):
 
 def get_alert(alert_id: int):
     try:
-        r = requests.get(f"{API_BASE}/alerts/{alert_id}", timeout=10)
+        r = requests.get(f"{API_BASE}/alert/{alert_id}", timeout=10)
         if r.status_code != 200:
-            st.error(f"GET /alerts/{alert_id} → {r.status_code}")
+            st.error(f"GET /alert/{alert_id} → {r.status_code}")
             return None
         return r.json()
     except requests.exceptions.RequestException as ex:
@@ -62,12 +60,12 @@ def get_alert(alert_id: int):
 def ack_alert(alert_id: int, nurse_id: int):
     try:
         r = requests.put(
-            f"{API_BASE}/alerts/{alert_id}",
+            f"{API_BASE}/alert/{alert_id}",
             json={"user_type": "nurse", "user_id": nurse_id},
             timeout=10,
         )
         if r.status_code != 200:
-            st.error(f"PUT /alerts/{alert_id} → {r.status_code}")
+            st.error(f"PUT /alert/{alert_id} → {r.status_code}")
             return False
         return True
     except requests.exceptions.RequestException as ex:
@@ -77,9 +75,9 @@ def ack_alert(alert_id: int, nurse_id: int):
 
 def create_alert(payload: dict):
     try:
-        r = requests.post(f"{API_BASE}/alerts", json=payload, timeout=10)
+        r = requests.post(f"{API_BASE}/alert/", json=payload, timeout=10)
         if r.status_code not in (200, 201):
-            st.error(f"POST /alerts → {r.status_code}")
+            st.error(f"POST /alert/ → {r.status_code}")
             return None
         return r.json()
     except requests.exceptions.RequestException as ex:

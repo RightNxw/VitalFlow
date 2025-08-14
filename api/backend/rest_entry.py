@@ -66,11 +66,11 @@ def create_app():
     app.register_blueprint(medications, url_prefix="/medication")
     app.register_blueprint(discharges, url_prefix="/discharge")
     app.register_blueprint(insurance, url_prefix="/insurance")
-    app.register_blueprint(doctors)
-    app.register_blueprint(nurses)
-    app.register_blueprint(proxies)
-    app.register_blueprint(messages)
-    app.register_blueprint(alerts)
+    app.register_blueprint(doctors, url_prefix="/doctor")
+    app.register_blueprint(nurses, url_prefix="/nurse")
+    app.register_blueprint(proxies, url_prefix="/proxy")
+    app.register_blueprint(messages, url_prefix="/message")
+    app.register_blueprint(alerts, url_prefix="/alert")
 
     # Don't forget to return the app object
     return app

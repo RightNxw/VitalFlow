@@ -10,80 +10,80 @@ http://localhost:4001
 
 ### Patients
 
-- `GET /patient/patients` - Get all patients
-- `GET /patient/patients/{id}` - Get patient by ID
-- `GET /patient/patients/{id}/vitals` - Get patient vitals
-- `GET /patient/patients/{id}/medications` - Get patient medications
-- `GET /patient/patients/{id}/condition` - Get patient condition
-- `GET /patient/patients/{id}/doctor` - Get patient's doctor
-- `GET /patient/patients/{id}/nurse` - Get patient's nurse
-- `GET /patient/patients/{id}/proxy` - Get patient's proxy
-- `GET /patient/patients/{id}/insurance` - Get patient's insurance
-- `GET /patient/patients/{id}/discharge` - Get patient's discharge info
+- `GET /patient/` - Get all patients
+- `GET /patient/{id}` - Get patient by ID
+- `GET /patient/{id}/vitals` - Get patient vitals
+- `GET /patient/{id}/medications` - Get patient medications
+- `GET /patient/{id}/condition` - Get patient condition
+- `GET /patient/{id}/doctor` - Get patient's doctor
+- `GET /patient/{id}/nurse` - Get patient's nurse
+- `GET /patient/{id}/proxy` - Get patient's proxy
+- `GET /patient/{id}/insurance` - Get patient's insurance
+- `GET /patient/{id}/discharge` - Get patient's discharge info
 
 ### Visits
 
-- `GET /visit/visits` - Get all visits
-- `GET /visit/visits/{id}` - Get visit by ID
-- `POST /visit/visits` - Create new visit
-- `PUT /visit/visits/{id}` - Update visit
+- `GET /visit/` - Get all visits
+- `GET /visit/{id}` - Get visit by ID
+- `POST /visit/` - Create new visit
+- `PUT /visit/{id}` - Update visit
 
 ### Vitals
 
-- `GET /vital/vitalcharts` - Get all vital charts
-- `GET /vital/vitalcharts/{id}` - Get vital chart by ID
-- `POST /vital/vitalcharts` - Create new vital chart
+- `GET /vital/` - Get all vital charts
+- `GET /vital/{id}` - Get vital chart by ID
+- `POST /vital/` - Create new vital chart
 
 ### Conditions
 
-- `GET /condition/conditions` - Get all conditions
-- `GET /condition/conditions/{id}` - Get condition by ID
-- `POST /condition/conditions` - Create new condition
-- `PUT /condition/conditions/{id}` - Update condition
+- `GET /condition/` - Get all conditions
+- `GET /condition/{id}` - Get condition by ID
+- `POST /condition/` - Create new condition
+- `PUT /condition/{id}` - Update condition
 
 ### Medications
 
-- `GET /medication/medications` - Get all medications
-- `GET /medication/medications/{id}` - Get medication by ID
+- `GET /medication/` - Get all medications
+- `GET /medication/{id}` - Get medication by ID
 - `GET /medication/patient_medications` - Get patient-medication links
 - `POST /medication/patient_medications` - Link patient to medication
 
 ### Discharges
 
-- `GET /discharge/discharge` - Get all discharges
-- `GET /discharge/discharge/{id}` - Get discharge by ID
-- `POST /discharge/discharge` - Create new discharge
+- `GET /discharge/` - Get all discharges
+- `GET /discharge/{id}` - Get discharge by ID
+- `POST /discharge/` - Create new discharge
 
 ### Insurance
 
-- `GET /insurance/insurance` - Get all insurance
-- `GET /insurance/insurance/{id}` - Get insurance by ID
+- `GET /insurance/` - Get all insurance
+- `GET /insurance/{id}` - Get insurance by ID
 
 ### Staff
 
-- `GET /doctors` - Get all doctors
-- `GET /doctors/{id}` - Get doctor by ID
-- `GET /nurses` - Get all nurses
-- `GET /nurses/{id}` - Get nurse by ID
+- `GET /doctor/` - Get all doctors
+- `GET /doctor/{id}` - Get doctor by ID
+- `GET /nurse/` - Get all nurses
+- `GET /nurse/{id}` - Get nurse by ID
 
 ### Proxies
 
-- `GET /proxies` - Get all proxies
-- `GET /proxies/{id}` - Get proxy by ID
-- `GET /proxies/{id}/patients` - Get patients by proxy
+- `GET /proxy/` - Get all proxies
+- `GET /proxy/{id}` - Get proxy by ID
+- `GET /proxy/{id}/patients` - Get patients by proxy
 
 ### Messages
 
-- `GET /messages?user_type={type}&user_id={id}` - Get messages for user
-- `POST /messages` - Create message
-- `GET /messages/{id}` - Get message by ID
+- `GET /message/?user_type={type}&user_id={id}` - Get messages for user
+- `POST /message/` - Create message
+- `GET /message/{id}` - Get message by ID
 
 ### Alerts
 
-- `GET /alerts?user_type={type}&user_id={id}` - Get alerts for user
-- `POST /alerts` - Create alert
-- `GET /alerts/{id}` - Get alert by ID
-- `PUT /alerts/{id}` - Acknowledge alert
+- `GET /alert/?user_type={type}&user_id={id}` - Get alerts for user
+- `POST /alert/` - Create alert
+- `GET /alert/{id}` - Get alert by ID
+- `PUT /alert/{id}` - Acknowledge alert
 
 ## Data Examples
 
@@ -119,13 +119,13 @@ Use Curl or postman
 ### Get patient medications
 
 ```bash
-curl "http://localhost:4001/patient/patients/2/medications"
+curl "http://localhost:4001/patient/2/medications"
 ```
 
 ### Create visit
 
 ```bash
-curl -X POST "http://localhost:4001/visit/visits" \
+curl -X POST "http://localhost:4000/visit/" \
   -H "Content-Type: application/json" \
   -d '{"AdmitReason": "Checkup", "AppointmentDate": "2024-08-15"}'
 ```
@@ -133,7 +133,7 @@ curl -X POST "http://localhost:4001/visit/visits" \
 ### Get messages for patient
 
 ```bash
-curl "http://localhost:4001/messages?user_type=patient&user_id=1"
+curl "http://localhost:4000/message/?user_type=patient&user_id=1"
 ```
 
 ## Status Codes
@@ -147,5 +147,5 @@ curl "http://localhost:4001/messages?user_type=patient&user_id=1"
 ## Test
 
 1. Start Docker: `docker compose -f sandbox.yaml up -d`
-2. API: `http://localhost:4001`
-3. App: `http://localhost:8502`
+2. API: `http://localhost:4000`
+3. App: `http://localhost:8501`

@@ -31,9 +31,9 @@ if DEFAULT_NURSE_ID == 0:
 
 def list_patients():
     try:
-        r = requests.get(f"{API_BASE}/patient/patients", timeout=10)
+        r = requests.get(f"{API_BASE}/patient/", timeout=10)
         if r.status_code != 200:
-            st.error(f"GET /patient/patients → {r.status_code}")
+            st.error(f"GET /patient/ → {r.status_code}")
             return []
         return r.json() or []
     except requests.exceptions.RequestException as ex:
@@ -43,7 +43,7 @@ def list_patients():
 
 def get_patient(pid: int):
     try:
-        r = requests.get(f"{API_BASE}/patient/patients/{pid}", timeout=10)
+        r = requests.get(f"{API_BASE}/patient/{pid}", timeout=10)
         if r.status_code != 200:
             return None
         return r.json()
@@ -53,9 +53,9 @@ def get_patient(pid: int):
 
 def get_patient_medications(pid: int):
     try:
-        r = requests.get(f"{API_BASE}/patient/patients/{pid}/medications", timeout=10)
+        r = requests.get(f"{API_BASE}/patient/{pid}/medications", timeout=10)
         if r.status_code != 200:
-            st.error(f"GET /patient/patients/{pid}/medications → {r.status_code}")
+            st.error(f"GET /patient/{pid}/medications → {r.status_code}")
             return []
         return r.json() or []
     except requests.exceptions.RequestException as ex:

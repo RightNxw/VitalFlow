@@ -30,7 +30,7 @@ API_BASE_URL = "http://web-api:4000"
 def get_proxies():
     """Get all proxies"""
     try:
-        response = requests.get(f"{API_BASE_URL}/proxies")
+        response = requests.get(f"{API_BASE_URL}/proxy/")
         if response.status_code == 200:
             return response.json()
         return []
@@ -41,7 +41,7 @@ def get_proxies():
 def get_proxy_by_name(first_name, last_name):
     """Get proxy information by name"""
     try:
-        response = requests.get(f"{API_BASE_URL}/proxies/name/{first_name}/{last_name}")
+        response = requests.get(f"{API_BASE_URL}/proxy/name/{first_name}/{last_name}")
         if response.status_code == 200:
             return response.json()
         return None
@@ -52,7 +52,7 @@ def get_proxy_by_name(first_name, last_name):
 def get_proxy_patients(proxy_id):
     """Get patients for specific proxy"""
     try:
-        response = requests.get(f"{API_BASE_URL}/proxies/{proxy_id}/patients")
+        response = requests.get(f"{API_BASE_URL}/proxy/{proxy_id}/patients")
         if response.status_code == 200:
             return response.json()
         return []
@@ -66,7 +66,7 @@ def get_proxy_patients(proxy_id):
 def get_insurance_info(patient_id):
     """Get insurance information for patient"""
     try:
-        response = requests.get(f"{API_BASE_URL}/patient/patients/{patient_id}/insurance")
+        response = requests.get(f"{API_BASE_URL}/patient/{patient_id}/insurance")
         if response.status_code == 200:
             insurance_data = response.json()
             # Backend returns a single insurance record, wrap it in a list for consistency

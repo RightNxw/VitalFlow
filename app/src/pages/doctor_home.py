@@ -112,7 +112,7 @@ def render_patient_card(patient_data):
     # First check if patient has a direct VisitID
     if patient.get('VisitID'):
         try:
-            visit_response = requests.get(f"{API_BASE_URL}/visit/visits/{patient.get('VisitID')}")
+            visit_response = requests.get(f"{API_BASE_URL}/visit/{patient.get('VisitID')}")
             if visit_response.status_code == 200:
                 visit_data = visit_response.json()
                 admit_date = visit_data.get('AppointmentDate', 'N/A')
@@ -188,7 +188,7 @@ def render_patient_card(patient_data):
 def get_doctors():
     """Get all doctors from API"""
     try:
-        response = requests.get(f"{API_BASE_URL}/doctors")
+        response = requests.get(f"{API_BASE_URL}/doctor/")
         if response.status_code == 200:
             return response.json()
         return []
@@ -199,7 +199,7 @@ def get_doctors():
 def get_patients():
     """Get all patients from API"""
     try:
-        response = requests.get(f"{API_BASE_URL}/patient/patients")
+        response = requests.get(f"{API_BASE_URL}/patient/")
         if response.status_code == 200:
             return response.json()
         return []
@@ -214,7 +214,7 @@ def get_patient_details(patient_id):
     """Get detailed patient information"""
     try:
         ## Get patient basic info
-        patient_response = requests.get(f"{API_BASE_URL}/patient/patients/{patient_id}")
+        patient_response = requests.get(f"{API_BASE_URL}/patient/{patient_id}")
         if patient_response.status_code != 200:
             return None
  
@@ -222,21 +222,21 @@ def get_patient_details(patient_id):
  
         ## Get patient vitals
         try:
-            vitals_response = requests.get(f"{API_BASE_URL}/patient/patients/{patient_id}/vitals")
+            vitals_response = requests.get(f"{API_BASE_URL}/patient/{patient_id}/vitals")
             vitals = vitals_response.json() if vitals_response.status_code == 200 else []
         except:
             vitals = []
  
         ## Get patient conditions
         try:
-            conditions_response = requests.get(f"{API_BASE_URL}/patient/patients/{patient_id}/condition")
+            conditions_response = requests.get(f"{API_BASE_URL}/patient/{patient_id}/condition")
             conditions = conditions_response.json() if conditions_response.status_code == 200 else []
         except:
             conditions = []
  
         ## Get patient medications
         try:
-            meds_response = requests.get(f"{API_BASE_URL}/patient/patients/{patient_id}/medications")
+            meds_response = requests.get(f"{API_BASE_URL}/patient/{patient_id}/medications")
             medications = meds_response.json() if meds_response.status_code == 200 else []
         except:
             medications = []
@@ -246,7 +246,7 @@ def get_patient_details(patient_id):
         
         # Method 1: Get all visits and filter by patient ID
         try:
-            visits_response = requests.get(f"{API_BASE_URL}/visit/visits")
+            visits_response = requests.get(f"{API_BASE_URL}/visit/")
             if visits_response.status_code == 200:
                 all_visits = visits_response.json()
                 patient_visits = [v for v in all_visits if v.get('PatientID') == patient_id]
@@ -256,7 +256,7 @@ def get_patient_details(patient_id):
         # Method 2: If patient has VisitID, get that specific visit
         if not patient_visits and patient.get('VisitID'):
             try:
-                specific_visit_response = requests.get(f"{API_BASE_URL}/visit/visits/{patient.get('VisitID')}")
+                specific_visit_response = requests.get(f"{API_BASE_URL}/visit/{patient.get('VisitID')}")
                 if specific_visit_response.status_code == 200:
                     specific_visit = specific_visit_response.json()
                     patient_visits = [specific_visit]
@@ -276,7 +276,7 @@ def get_patient_details(patient_id):
 def get_visits():
     """Get all visits from API"""
     try:
-        response = requests.get(f"{API_BASE_URL}/visit/visits")
+        response = requests.get(f"{API_BASE_URL}/visit/")
         if response.status_code == 200:
             return response.json()
         return []
@@ -291,7 +291,7 @@ def get_visits():
 def get_vitals():
     """Get all vital charts from API"""
     try:
-        response = requests.get(f"{API_BASE_URL}/vital/vitalcharts")
+        response = requests.get(f"{API_BASE_URL}/vital/")
         if response.status_code == 200:
             return response.json()
         return []
@@ -302,7 +302,7 @@ def get_vitals():
 def get_conditions():
     """Get all conditions from API"""
     try:
-        response = requests.get(f"{API_BASE_URL}/condition/conditions")
+        response = requests.get(f"{API_BASE_URL}/condition/")
         if response.status_code == 200:
             return response.json()
         return []
@@ -313,7 +313,7 @@ def get_conditions():
 def get_alerts(doctor_id):
     """Get alerts for specific doctor"""
     try:
-        response = requests.get(f"{API_BASE_URL}/alerts?user_type=doctor&user_id={doctor_id}")
+        response = requests.get(f"{API_BASE_URL}/alert/?user_type=doctor&user_id={doctor_id}")
         if response.status_code == 200:
             return response.json()
         return []
@@ -324,7 +324,7 @@ def get_alerts(doctor_id):
 def get_messages(doctor_id):
     """Get messages for specific doctor"""
     try:
-        response = requests.get(f"{API_BASE_URL}/messages?user_type=doctor&user_id={doctor_id}")
+        response = requests.get(f"{API_BASE_URL}/message/?user_type=doctor&user_id={doctor_id}")
         if response.status_code == 200:
             return response.json()
         return []

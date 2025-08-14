@@ -8,7 +8,7 @@ discharges = Blueprint("discharges", __name__)
 
 
 # Get all discharge records
-@discharges.route("/discharge", methods=["GET"])
+@discharges.route("/", methods=["GET"])
 def get_all_discharges():
     try:
         current_app.logger.info('Starting get_all_discharges request')
@@ -27,7 +27,7 @@ def get_all_discharges():
 
 # Create discharge with DischargeDate and Instructions
 # Available to Doctor-1.4
-@discharges.route("/discharge", methods=["POST"])
+@discharges.route("/", methods=["POST"])
 def create_discharge():
     try:
         data = request.get_json()
@@ -63,7 +63,7 @@ def create_discharge():
 
 # Get discharge details
 # Available to Patient-3.2 and Proxy-4.5
-@discharges.route("/discharge/<int:discharge_id>", methods=["GET"])
+@discharges.route("/<int:discharge_id>", methods=["GET"])
 def get_discharge(discharge_id):
     try:
         cursor = db.get_db().cursor()

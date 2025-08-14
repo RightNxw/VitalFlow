@@ -8,7 +8,7 @@ vitals = Blueprint("vitals", __name__)
 
 
 # Get all vital charts
-@vitals.route("/vitalcharts", methods=["GET"])
+@vitals.route("/", methods=["GET"])
 def get_all_vital_charts():
     try:
         current_app.logger.info('Starting get_all_vitalcharts request')
@@ -27,7 +27,7 @@ def get_all_vital_charts():
 
 # Create a new vital chart
 # Available to Nurse-2.1
-@vitals.route("/vitalcharts", methods=["POST"])
+@vitals.route("/", methods=["POST"])
 def create_vital_chart():
     try:
         data = request.get_json()
@@ -63,9 +63,8 @@ def create_vital_chart():
         return jsonify({"error": str(e)}), 500
 
 
-# Get a specific vital chart
-# Available to Doctor-1.2 and Nurse-2.1
-@vitals.route("/vitalcharts/<int:vital_id>", methods=["GET"])
+# Get details for a specific vital chart
+@vitals.route("/<int:vital_id>", methods=["GET"])
 def get_vital_chart(vital_id):
     try:
         cursor = db.get_db().cursor()

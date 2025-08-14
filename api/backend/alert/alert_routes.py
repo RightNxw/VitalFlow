@@ -10,7 +10,7 @@ alerts = Blueprint("alerts", __name__)
 
 # Get alerts for a user (accessible via AlertsDoctors or AlertsNurse)
 # Available to Nurse-2.3 and Proxy-4.1
-@alerts.route("/alerts", methods=["GET"])
+@alerts.route("/", methods=["GET"])
 def get_alerts():
     try:
         current_app.logger.info('Starting get_alerts request')
@@ -53,7 +53,7 @@ def get_alerts():
 
 
 # Create alert with UrgencyLevel and Protocol
-@alerts.route("/alerts", methods=["POST"])
+@alerts.route("/", methods=["POST"])
 def create_alert():
     try:
         data = request.get_json()
@@ -98,7 +98,7 @@ def create_alert():
 
 # Get a specific alert with Message, SentTime, PostedBy, PostedByRole, UrgencyLevel, and Protocol
 # Available to Nurse-2.3
-@alerts.route("/alerts/<int:alert_id>", methods=["GET"])
+@alerts.route("/<int:alert_id>", methods=["GET"])
 def get_alert(alert_id):
     try:
         cursor = db.get_db().cursor()
@@ -116,7 +116,7 @@ def get_alert(alert_id):
 
 
 # Acknowledge alert (sets AcknowledgedTime to NOW())
-@alerts.route("/alerts/<int:alert_id>", methods=["PUT"])
+@alerts.route("/<int:alert_id>", methods=["PUT"])
 def acknowledge_alert(alert_id):
     try:
         data = request.get_json()
