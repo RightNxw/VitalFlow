@@ -21,7 +21,8 @@ CREATE TABLE IF NOT EXISTS Insurance (
     InsuranceID INTEGER PRIMARY KEY AUTO_INCREMENT,
     InsuranceProvider VARCHAR(100) NOT NULL,
     PolicyNumber VARCHAR(50) NOT NULL,
-    Deductible DECIMAL(10,2)
+    Deductible DECIMAL(10,2),
+    DueDate DATE
 );
 
 CREATE TABLE IF NOT EXISTS Visits (
@@ -214,17 +215,25 @@ INSERT INTO Nurse (FirstName, LastName) VALUES
 ('Linda', 'Martin'),
 ('Daniel', 'Clark');
 
-INSERT INTO Insurance (InsuranceProvider, PolicyNumber, Deductible) VALUES
-('Blue Cross Blue Shield', 'BCBS-2024-001', 500.00),
-('United Healthcare', 'UHC-2024-002', 750.00),
-('Aetna', 'AET-2024-003', 1000.00),
-('Cigna', 'CIG-2024-004', 600.00),
-('Humana', 'HUM-2024-005', 850.00),
-('Kaiser Permanente', 'KP-2024-006', 400.00),
-('Anthem', 'ANT-2024-007', 900.00),
-('Medicare', 'MED-2024-008', 200.00),
-('Medicaid', 'MCD-2024-009', 0.00),
-('MetLife', 'MET-2024-010', 1200.00);
+INSERT INTO Insurance (InsuranceProvider, PolicyNumber, Deductible, DueDate) VALUES
+('Blue Cross Blue Shield', 'BCBS-2024-001', 500.00, '2024-12-31'),
+('United Healthcare', 'UHC-2024-002', 750.00, '2024-11-30'),
+('Aetna', 'AET-2024-003', 1000.00, '2024-10-31'),
+('Cigna', 'CIG-2024-004', 600.00, '2024-09-30'),
+('Humana', 'HUM-2024-005', 850.00, '2024-08-31'),
+('Kaiser Permanente', 'KP-2024-006', 400.00, '2024-07-31'),
+('Anthem', 'ANT-2024-007', 900.00, '2024-06-30'),
+('Medicare', 'MED-2024-008', 200.00, '2024-05-31'),
+('Medicaid', 'MCD-2024-009', 0.00, '2024-04-30'),
+('MetLife', 'MET-2024-010', 1200.00, '2024-03-31'),
+('Blue Cross Blue Shield', 'BCBS-2024-011', 650.00, '2024-02-29'),
+('United Healthcare', 'UHC-2024-012', 800.00, '2024-01-31'),
+('Aetna', 'AET-2024-013', 1100.00, '2024-12-15'),
+('Cigna', 'CIG-2024-014', 700.00, '2024-11-15'),
+('Humana', 'HUM-2024-015', 950.00, '2024-10-15'),
+('Blue Cross Blue Shield', 'BCBS-2024-016', 550.00, '2024-09-15'),
+('United Healthcare', 'UHC-2024-017', 900.00, '2024-08-15'),
+('Aetna', 'AET-2024-018', 1200.00, '2024-07-15');
 
 INSERT INTO Visits (AdmitReason, AppointmentDate, NextVisitDate) VALUES
 ('Annual physical examination', '2024-01-15', '2025-01-15'),
@@ -295,16 +304,16 @@ INSERT INTO Discharge (DischargeDate, Instructions) VALUES
 ('2024-07-01', 'Isolate for 5 days. Rest and hydrate. Return if symptoms worsen.');
 
 INSERT INTO Patient (FirstName, LastName, DOB, Weight, BloodType, PreExisting, InsuranceID, DischargeID, ConditionID, DoctorID, NurseID, VitalID, VisitID) VALUES
-('Alice', 'Smith', '1980-05-15', 145.5, 'O+', FALSE, 1, 1, 1, 2, 1, 1, 1),
-('Bob', 'Johnson', '1955-08-22', 182.0, 'A+', TRUE, 2, 2, 2, 1, 2, 2, 2),
+('Alice', 'Smith', '1980-05-15', 145.5, 'O+', FALSE, 11, 1, 1, 2, 1, 1, 1),
+('Bob', 'Johnson', '1955-08-22', 182.0, 'A+', TRUE, 12, 2, 2, 1, 2, 2, 2),
 ('Charlie', 'Williams', '2018-12-10', 42.5, 'B+', FALSE, 3, 3, 3, 3, 3, 3, 3),
-('Diana', 'Brown', '1992-03-18', 130.0, 'AB+', FALSE, 4, 4, 4, 6, 4, 4, 4),
-('Edward', 'Davis', '1975-11-30', 195.5, 'O-', TRUE, 5, 5, 5, 5, 5, 5, 5),
+('Diana', 'Brown', '1992-03-18', 130.0, 'AB+', FALSE, 13, 4, 4, 6, 4, 4, 4),
+('Edward', 'Davis', '1975-11-30', 195.5, 'O-', TRUE, 14, 5, 5, 5, 5, 5, 5),
 ('Fiona', 'Miller', '1948-07-05', 168.0, 'A-', TRUE, 6, 6, 6, 6, 6, 6, 6),
 ('George', 'Wilson', '1960-09-12', 210.0, 'B-', TRUE, 7, 7, 7, 7, 7, 7, 7),
 ('Hannah', 'Moore', '1995-01-25', 125.5, 'AB-', TRUE, 8, 8, 8, 8, 8, 8, 8),
-('Ian', 'Taylor', '2000-06-08', 155.0, 'O+', FALSE, 9, 9, 9, 9, 9, 9, 9),
-('Julia', 'Anderson', '1988-04-20', 138.5, 'A+', FALSE, 10, 10, 10, 10, 10, 10, 10),
+('Ian', 'Taylor', '2000-06-08', 155.0, 'O+', FALSE, 15, 9, 9, 9, 9, 9, 9),
+('Julia', 'Anderson', '1988-04-20', 138.5, 'A+', FALSE, 16, 10, 10, 10, 10, 10, 10),
 ('Kevin', 'Thomas', '1970-02-14', 220.0, 'B+', TRUE, 1, 11, 11, 2, 1, 11, 11),
 ('Laura', 'Jackson', '1965-10-28', 160.0, 'O-', TRUE, 2, 12, 12, 1, 2, 12, 12),
 ('Mike', 'White', '1990-12-03', 175.5, 'A-', FALSE, 3, 13, 13, 3, 3, 13, 13),
@@ -316,7 +325,13 @@ INSERT INTO Proxy (PatientID, FirstName, LastName, Relationship) VALUES
 (3, 'John', 'Williams', 'Father'),
 (6, 'Robert', 'Miller', 'Son'),
 (7, 'Lisa', 'Wilson', 'Daughter'),
-(8, 'Mark', 'Moore', 'Spouse');
+(8, 'Mark', 'Moore', 'Spouse'),
+(1, 'Nina', 'Pesci', 'Daughter'),
+(2, 'Nina', 'Pesci', 'Daughter'),
+(4, 'Nina', 'Pesci', 'Sister'),
+(5, 'Nina', 'Pesci', 'Sister'),
+(9, 'Nina', 'Pesci', 'Aunt'),
+(10, 'Nina', 'Pesci', 'Aunt');
 
 INSERT INTO Medication (PrescriptionName, DosageAmount, DosageUnit, PickUpLocation, RefillsLeft, FrequencyAmount, FrequencyPeriod) VALUES
 ('Lisinopril', 10, 'mg', 'CVS Pharmacy - Main St', 5, 1, 'daily'),

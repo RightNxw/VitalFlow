@@ -28,7 +28,7 @@ API_BASE_URL = "http://web-api:4000"
 
 ## API functions
 def get_proxies():
-    """Get all proxies from API"""
+    """Get all proxies"""
     try:
         response = requests.get(f"{API_BASE_URL}/proxies")
         if response.status_code == 200:
@@ -37,6 +37,17 @@ def get_proxies():
     except:
         st.warning("Could not connect to proxies API, using dummy data.")
         return [{"ProxyID": 1, "FirstName": "Nina", "LastName": "Pesci", "Relationship": "Child"}]
+
+def get_proxy_by_name(first_name, last_name):
+    """Get proxy information by name"""
+    try:
+        response = requests.get(f"{API_BASE_URL}/proxies/name/{first_name}/{last_name}")
+        if response.status_code == 200:
+            return response.json()
+        return None
+    except:
+        st.warning("Could not connect to proxy API, using dummy data.")
+        return {"ProxyID": 1, "FirstName": "Nina", "LastName": "Pesci", "Relationship": "Child"}
 
 def get_proxy_patients(proxy_id):
     """Get patients for specific proxy"""
@@ -57,26 +68,41 @@ def get_insurance_info(patient_id):
     try:
         response = requests.get(f"{API_BASE_URL}/patient/patients/{patient_id}/insurance")
         if response.status_code == 200:
-            return response.json()
-        return []
-    except:
-        st.warning("Could not connect to insurance API, using dummy data.")
+            insurance_data = response.json()
+            # Backend returns a single insurance record, wrap it in a list for consistency
+            if insurance_data and isinstance(insurance_data, dict):
+                return [insurance_data]
+            return []
+        elif response.status_code == 404:
+            # No insurance found for this patient
+            return []
+        else:
+            st.warning(f"Insurance API returned status {response.status_code}")
+            return []
+    except Exception as e:
+        st.warning(f"Could not connect to insurance API: {str(e)}")
+        # Return dummy data for testing
         return [{"InsuranceProvider": "Blue Cross", "PolicyNumber": "BC123456", "Deductible": 1000.00, "DueDate": "2024-12-31"}]
 
 ## Get proxy information
-proxies = get_proxies()
-if proxies:
-    current_proxy = proxies[0]
-    proxy_id = current_proxy.get('ProxyID', 1)
+# Try to get proxy by name first, then fall back to first proxy
+proxy_info = get_proxy_by_name("Nina", "Pesci")
+if proxy_info:
+    proxy_id = proxy_info.get('ProxyID', 1)
+    proxy_name = f"{proxy_info.get('FirstName', 'Nina')} {proxy_info.get('LastName', 'Pesci')}"
 else:
-    proxy_id = 1
+    # Fallback to first proxy if name lookup fails
+    proxies = get_proxies()
+    if proxies:
+        current_proxy = proxies[0]
+        proxy_id = current_proxy.get('ProxyID', 1)
+        proxy_name = f"{current_proxy.get('FirstName', 'Nina')} {current_proxy.get('LastName', 'Pesci')}"
+    else:
+        proxy_id = 1
+        proxy_name = "Nina Pesci"
 
 ## Welcome message
-if proxies:
-    proxy_name = f"{proxies[0].get('FirstName', 'Nina')} {proxies[0].get('LastName', 'Pesci')}"
-    st.markdown(f"### Welcome, {proxy_name}")
-else:
-    st.markdown("### Welcome, Nina Pesci")
+st.markdown(f"### Welcome, {proxy_name}")
 
 st.markdown("---")
 
@@ -130,11 +156,15 @@ if dependent_patients:
             
             if insurance_info:
                 for insurance in insurance_info:
-                    st.markdown(f"""
-                    **Provider:** {insurance.get('InsuranceProvider', 'N/A')}
-                    **Deductible:** ${insurance.get('Deductible', 'N/A')}
-                    **Due Date:** {insurance.get('DueDate', 'N/A')}
-                    """)
+                    # Check if insurance is a dictionary with the expected structure
+                    if isinstance(insurance, dict) and 'InsuranceProvider' in insurance:
+                        st.markdown(f"""
+                        **Provider:** {insurance.get('InsuranceProvider', 'N/A')}
+                        **Deductible:** ${insurance.get('Deductible', 'N/A')}
+                        **Due Date:** {insurance.get('DueDate', 'N/A')}
+                        """)
+                    else:
+                        st.warning("Invalid insurance data format")
                     
                     st.divider()
             else:
