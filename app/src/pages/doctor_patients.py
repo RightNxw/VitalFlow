@@ -285,21 +285,9 @@ def show_patient_details():
                 if not isinstance(vital, dict):
                     continue
                     
-                # Safe timestamp handling
-                timestamp = vital.get('Timestamp', 'N/A')
-                if timestamp and timestamp != 'N/A':
-                    try:
-                        # Try to format the timestamp if it's valid
-                        if isinstance(timestamp, str):
-                            timestamp_str = timestamp
-                        else:
-                            timestamp_str = str(timestamp)
-                    except:
-                        timestamp_str = 'Unknown Time'
-                else:
-                    timestamp_str = 'No Timestamp'
+               
                 
-                with st.expander(f"Vital Record - {timestamp_str}"):
+                with st.expander(f"Vital Record"):
                     col1, col2 = st.columns(2)
                     with col1:
                         st.metric("Heart Rate", f"{vital.get('HeartRate', 'N/A')} bpm")

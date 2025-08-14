@@ -30,7 +30,17 @@ def get_alerts(doctor_id):
         return []
     except:
         st.warning("Could not connect to alerts API, using dummy data.")
-        return [{"AlertID": 1, "Title": "High Blood Pressure", "Description": "Patient BP elevated", "Severity": "High"}]
+        return [
+            {
+                "AlertID": 1, 
+                "Message": "Patient blood pressure critically high: 180/110", 
+                "PostedBy": 2, 
+                "PostedByRole": "Nurse", 
+                "Protocol": "Immediate intervention required. Administer antihypertensive medication.", 
+                "SentTime": "Thu, 14 Aug 2025 01:49:01 GMT", 
+                "UrgencyLevel": 5
+            }
+        ]
  
 ## Get alerts for current doctor
 doctor_id = st.session_state.get('current_doctor_id', 1)
@@ -42,8 +52,22 @@ if not alerts:
  
 ##  Display alerts
 for alert in alerts:
-    with st.expander(f"⚠️ {alert.get('Title', 'Alert')} - {alert.get('Severity', 'Medium')}"):
-        st.markdown(f"**Description:** {alert.get('Description', 'No description')}")
-        st.markdown(f"**Patient ID:** {alert.get('PatientID', 'N/A')}")
-        st.markdown(f"**Timestamp:** {alert.get('Timestamp', 'N/A')}")
+    # Get urgency level with color coding
+    urgency = alert.get('UrgencyLevel', 1)
+    urgency_text = f"Level {urgency}"
+    urgency_color = "🔴" if urgency >= 4 else "🟡" if urgency >= 2 else "🟢"
+    
+    with st.expander(f"{urgency_color} Alert #{alert.get('AlertID', 'N/A')} - {urgency_text}", expanded=True):
+        st.markdown(f"**Message:** {alert.get('Message', 'No message')}")
+        st.markdown(f"**Protocol:** {alert.get('Protocol', 'No protocol')}")
+        st.markdown(f"**Posted By:** {alert.get('PostedByRole', 'Unknown')} (ID: {alert.get('PostedBy', 'N/A')})")
+        st.markdown(f"**Sent Time:** {alert.get('SentTime', 'N/A')}")
+        
+        # Add action buttons
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("✅ Acknowledge", key=f"ack_{alert.get('AlertID')}"):
+                st.success("Alert acknowledged!")
+        with col2:
+            pass  # Removed View Details button
  
