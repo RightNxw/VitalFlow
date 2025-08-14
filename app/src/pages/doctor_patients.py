@@ -10,11 +10,16 @@ from datetime import datetime
 from streamlit_extras.app_logo import add_logo
 from modules.nav import SideBarLinks
 
+## Page config - MUST be first Streamlit command
+st.set_page_config(
+    page_title="Doctor Patients",
+    page_icon="👥",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
+
 ## Add logo and navigation
 SideBarLinks()
-
-## Page config
-
 
 ## App state for navigation
 if "selected_patient" not in st.session_state:
@@ -54,10 +59,6 @@ def get_patient_details(patient_id):
         vitals_response = requests.get(f"{API_BASE_URL}/patient/patients/{patient_id}/vitals")
         vitals = vitals_response.json() if vitals_response.status_code == 200 else []
         
-        # Get patient conditions
-        conditions_response = requests.get(f"{API_BASE_URL}/patient/patients/{patient_id}/condition")
-        conditions = conditions_response.json() if conditions_response.status_code == 200 else []
-        
         # Get patient medications
         meds_response = requests.get(f"{API_BASE_URL}/patient/patients/{patient_id}/medications")
         medications = meds_response.json() if meds_response.status_code == 200 else []
@@ -65,7 +66,6 @@ def get_patient_details(patient_id):
         return {
             'patient': patient,
             'vitals': vitals,
-            'conditions': conditions,
             'medications': medications
         }
     except:
@@ -142,8 +142,6 @@ def main():
         show_patient_list()
     elif st.session_state.current_view == "details":
         show_patient_details()
-    elif st.session_state.current_view == "chart":
-        show_patient_chart()
     elif st.session_state.current_view == "medications":
         show_patient_medications()
 
@@ -182,7 +180,7 @@ def show_patient_list():
         # Create interactive patient cards instead of dataframe
         for patient in filtered_patients:
             with st.container():
-                col1, col2, col3, col4 = st.columns([3, 1, 1, 1])
+                col1, col2, col3 = st.columns([3, 1, 1])
                 
                 with col1:
                     st.markdown(f"""
@@ -200,12 +198,6 @@ def show_patient_list():
                         st.rerun()
                 
                 with col3:
-                    if st.button("📊 Chart", key=f"chart_{patient.get('PatientID')}", use_container_width=True):
-                        st.session_state.selected_patient = patient.get('PatientID')
-                        st.session_state.current_view = "chart"
-                        st.rerun()
-                
-                with col4:
                     if st.button("💊 Meds", key=f"meds_{patient.get('PatientID')}", use_container_width=True):
                         st.session_state.selected_patient = patient.get('PatientID')
                         st.session_state.current_view = "medications"
@@ -230,7 +222,6 @@ def show_patient_details():
     
     patient = patient_data['patient']
     vitals = patient_data['vitals']
-    conditions = patient_data['conditions']
     medications = patient_data['medications']
     
     # Header with back button
@@ -243,144 +234,61 @@ def show_patient_details():
             st.rerun()
     
     # Patient information tabs
-    tab1, tab2, tab3, tab4 = st.tabs(["📋 Basic Info", "❤️ Vitals", "🏥 Conditions", "💊 Medications"])
+    tab1, tab2 = st.tabs(["📋 Basic Info", "❤️ Vital Signs/Update"])
     
     with tab1:
         st.markdown("### Basic Information")
-        col1, col2 = st.columns(2)
         
-        with col1:
-            st.markdown(f"""
-            - **Patient ID:** {patient.get('PatientID', 'N/A')}
-            - **First Name:** {patient.get('FirstName', 'N/A')}
-            - **Last Name:** {patient.get('LastName', 'N/A')}
-            - **Date of Birth:** {patient.get('DOB', 'N/A')}
-            """)
-        
-        with col2:
-            st.markdown(f"""
-            - **Blood Type:** {patient.get('BloodType', 'N/A')}
-            - **Weight:** {patient.get('Weight', 'N/A')} lbs
-            - **Pre-existing Conditions:** {patient.get('PreExisting', 'N/A')}
-            """)
+        # Make basic info a dropdown/expander
+        with st.expander("Patient Basic Information", expanded=True):
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.markdown(f"""
+                - **Patient ID:** {patient.get('PatientID', 'N/A')}
+                - **First Name:** {patient.get('FirstName', 'N/A')}
+                - **Last Name:** {patient.get('LastName', 'N/A')}
+                - **Date of Birth:** {patient.get('DOB', 'N/A')}
+                """)
+            
+            with col2:
+                st.markdown(f"""
+                - **Blood Type:** {patient.get('BloodType', 'N/A')}
+                - **Weight:** {patient.get('Weight', 'N/A')} lbs
+                - **Pre-existing Conditions:** {patient.get('PreExisting', 'N/A')}
+                """)
     
     with tab2:
-        st.markdown("### Vital Signs")
-        if vitals:
-            for vital in vitals:
-                # Safe timestamp handling
-                timestamp = vital.get('Timestamp', 'N/A')
-                if timestamp and timestamp != 'N/A':
-                    try:
-                        # Try to format the timestamp if it's valid
-                        if isinstance(timestamp, str):
-                            timestamp_str = timestamp
-                        else:
-                            timestamp_str = str(timestamp)
-                    except:
-                        timestamp_str = 'Unknown Time'
-                else:
-                    timestamp_str = 'No Timestamp'
-                
-                with st.expander(f"Vital Record - {timestamp_str}"):
-                    col1, col2 = st.columns(2)
-                    with col1:
-                        st.metric("Heart Rate", f"{vital.get('HeartRate', 'N/A')} bpm")
-                        st.metric("Blood Pressure", vital.get('BloodPressure', 'N/A'))
-                    with col2:
-                        st.metric("Temperature", f"{vital.get('Temperature', 'N/A')}°F")
-                        st.metric("Respiratory Rate", f"{vital.get('RespiratoryRate', 'N/A')} /min")
-        else:
-            st.info("No vital records found")
-    
-    with tab3:
-        st.markdown("### Medical Conditions")
-        if conditions:
-            for condition in conditions:
-                with st.expander(f"Condition: {condition.get('Description', 'N/A')}"):
-                    st.markdown(f"**Treatment:** {condition.get('Treatment', 'N/A')}")
-        else:
-            st.info("No conditions found")
-    
-    with tab4:
-        st.markdown("### Current Medications")
-        if medications:
-            for med in medications:
-                with st.expander(f"Medication: {med.get('MedicationName', 'N/A')}"):
-                    st.markdown(f"**Dosage:** {med.get('Dosage', 'N/A')}")
-                    st.markdown(f"**Frequency:** {med.get('Frequency', 'N/A')}")
-        else:
-            st.info("No medications found")
-
-def show_patient_chart():
-    """Show and edit patient chart/vitals"""
-    if not st.session_state.selected_patient:
-        st.error("No patient selected")
-        return
-    
-    patient_id = st.session_state.selected_patient
-    patient_data = get_patient_details(patient_id)
-    
-    if not patient_data:
-        st.error("Could not load patient data")
-        return
-    
-    patient = patient_data['patient']
-    vitals = patient_data['vitals']
-    
-    # Header
-    col1, col2 = st.columns([4, 1])
-    with col1:
-        st.markdown(f"## 📊 Patient Chart: {patient.get('FirstName', '')} {patient.get('LastName', '')}")
-    with col2:
-        if st.button("← Back to List"):
-            st.session_state.current_view = "list"
-            st.rerun()
-    
-    # Current vitals display
-    st.markdown("### Current Vital Signs")
-    if vitals and len(vitals) > 0:
-        latest_vital = vitals[-1]
-        col1, col2, col3, col4 = st.columns(4)
-        with col1:
-            st.metric("Heart Rate", f"{latest_vital.get('HeartRate', 'N/A')} bpm")
-        with col2:
-            st.metric("Blood Pressure", latest_vital.get('BloodPressure', 'N/A'))
-        with col3:
-            st.metric("Temperature", f"{latest_vital.get('Temperature', 'N/A')}°F")
-        with col4:
-            st.metric("Respiratory Rate", f"{latest_vital.get('RespiratoryRate', 'N/A')} /min")
-    else:
-        st.info("No vital records found")
-    
-    # Add new vitals
-    st.markdown("### Add New Vital Signs")
-    with st.form("new_vitals"):
-        col1, col2 = st.columns(2)
-        with col1:
-            heart_rate = st.number_input("Heart Rate (bpm)", min_value=0, max_value=300, value=72)
-            blood_pressure = st.text_input("Blood Pressure", placeholder="120/80")
-            temperature = st.number_input("Temperature (°F)", min_value=90.0, max_value=110.0, value=98.6, step=0.1)
-        with col2:
-            respiratory_rate = st.number_input("Respiratory Rate (/min)", min_value=0, max_value=60, value=16)
-            oxygen_saturation = st.number_input("Oxygen Saturation (%)", min_value=70, max_value=100, value=98)
-            timestamp = st.datetime_input("Timestamp", value=datetime.now())
+        st.markdown("### Vital Signs/Update")
         
-        if st.form_submit_button("💾 Save Vitals"):
-            new_vitals = {
-                "PatientID": patient_id,
-                "HeartRate": heart_rate,
-                "BloodPressure": blood_pressure,
-                "Temperature": temperature,
-                "RespiratoryRate": respiratory_rate,
-                "Timestamp": timestamp.isoformat()
-            }
+        # Display current vitals from database
+      
+        
+        # Add new vitals form
+        st.markdown("#### Update Vitals")
+        with st.form(f"update_vitals_{patient_id}"):
+            col1, col2 = st.columns(2)
+            with col1:
+                heart_rate = st.number_input("Heart Rate (bpm)", min_value=0, max_value=300, value=72)
+                blood_pressure = st.text_input("Blood Pressure", placeholder="120/80")
+            with col2:
+                temperature = st.number_input("Temperature (°F)", min_value=90.0, max_value=110.0, value=98.6, step=0.1)
+                respiratory_rate = st.number_input("Respiratory Rate (/min)", min_value=0, max_value=60, value=16)
             
-            if update_patient_vitals(patient_id, new_vitals):
-                st.success("Vitals saved successfully!")
-                st.rerun()
-            else:
-                st.error("Failed to save vitals")
+            if st.form_submit_button("💾 Update Vitals"):
+                new_vitals = {
+                    "PatientID": patient_id,
+                    "HeartRate": heart_rate,
+                    "BloodPressure": blood_pressure,
+                    "Temperature": temperature,
+                    "RespiratoryRate": respiratory_rate
+                }
+                
+                if update_patient_vitals(patient_id, new_vitals):
+                    st.success("Vitals updated successfully!")
+                    st.rerun()
+                else:
+                    st.info("Note: Vitals update API endpoint not implemented yet")
 
 def show_patient_medications():
     """Show and manage patient medications"""

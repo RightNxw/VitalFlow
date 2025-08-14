@@ -89,6 +89,27 @@ def NurseInboxNav():
     st.sidebar.page_link("pages/xx_Nurse_Inbox.py", label="Inbox", icon="📥")
 
 
+#### ------------------------ Patient Role ------------------------
+def PatientHomeNav():
+    st.sidebar.page_link("pages/50_Patient_Home.py", label="Home", icon="🏠")
+
+
+def PatientPortalNav():
+    st.sidebar.page_link("pages/50_Patient_Home.py", label="Portal", icon="❤️")
+
+
+def PatientBillingNav():
+    st.sidebar.page_link("pages/50_Patient_Home.py", label="Billing", icon="💰")
+
+
+def PatientInboxNav():
+    st.sidebar.page_link("pages/50_Patient_Home.py", label="Inbox", icon="📬")
+
+
+def PatientSettingsNav():
+    st.sidebar.page_link("pages/50_Patient_Home.py", label="Settings", icon="⚙️")
+
+
 # --------------------------------Links Function -----------------------------------------------
 def SideBarLinks(show_home=False):
     """
@@ -128,6 +149,14 @@ def SideBarLinks(show_home=False):
         ## Show doctor portal navigation if the user is a doctor role.
         if st.session_state["role"] == "doctor":
             DoctorHomeNav()
+ 
+        ## Show patient portal navigation if the user is a patient role.
+        if st.session_state["role"] == "patient":
+            PatientHomeNav()
+            PatientPortalNav()
+            PatientBillingNav()
+            PatientInboxNav()
+            PatientSettingsNav()
  
         ## If the user role is usaid worker, show the Api Testing page
         if st.session_state["role"] == "usaid_worker":
