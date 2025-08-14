@@ -38,20 +38,7 @@ def get_proxies():
         st.warning("Could not connect to proxies API, using dummy data.")
         return [{"ProxyID": 1, "FirstName": "Nina", "LastName": "Pesci", "Relationship": "Child"}]
 
-def get_alerts(proxy_id):
-    """Get alerts for specific proxy"""
-    try:
-        response = requests.get(f"{API_BASE_URL}/alerts?user_type=proxy&user_id={proxy_id}")
-        if response.status_code == 200:
-            return response.json()
-        return []
-    except:
-        st.warning("Could not connect to alerts API, using dummy data.")
-        return [
-            {"AlertID": 1, "Title": "Medication Refill", "Description": "Patient needs medication refill", "Severity": "Medium", "PatientName": "Joe Pesci", "Date": "2024-01-20"},
-            {"AlertID": 2, "Title": "Appointment Reminder", "Description": "Upcoming appointment in 2 days", "Severity": "Low", "PatientName": "Maria Pesci", "Date": "2024-01-22"},
-            {"AlertID": 3, "Title": "Test Results Available", "Description": "Lab results are ready for review", "Severity": "Low", "PatientName": "Joe Pesci", "Date": "2024-01-19"}
-        ]
+
 
 def get_messages(proxy_id):
     """Get messages for specific proxy"""
@@ -88,25 +75,20 @@ st.markdown("---")
 ## Inbox Overview
 st.markdown("## 📊 Inbox Overview")
 
-alerts = get_alerts(proxy_id)
 messages = get_messages(proxy_id)
 
 # Summary metrics
-col1, col2, col3, col4 = st.columns(4)
+col1, col2, col3 = st.columns(3)
 
 with col1:
-    total_alerts = len(alerts)
-    st.metric("Active Alerts", total_alerts)
-
-with col2:
     total_messages = len(messages)
     st.metric("Total Messages", total_messages)
 
-with col3:
+with col2:
     unread_messages = len([m for m in messages if not m.get('Read', False)])
     st.metric("Unread Messages", unread_messages)
 
-with col4:
+with col3:
     high_priority = len([m for m in messages if m.get('Priority') == 'High'])
     st.metric("High Priority", high_priority)
 
@@ -180,44 +162,9 @@ else:
 
 st.markdown("---")
 
-## Alerts Section
-st.markdown("## ⚠️ Alerts")
 
-if alerts:
-    # Filter alerts by severity
-    severity_filter = st.selectbox("Filter by Severity", ["All", "High", "Medium", "Low"])
-    
-    filtered_alerts = alerts
-    if severity_filter != "All":
-        filtered_alerts = [a for a in alerts if a.get('Severity') == severity_filter]
-    
-    if filtered_alerts:
-        for alert in filtered_alerts:
-            severity_color = "🔴" if alert.get('Severity') == 'High' else "🟡" if alert.get('Severity') == 'Medium' else "🟢"
-            
-            with st.expander(f"{severity_color} {alert.get('Title', 'Alert')}", expanded=False):
-                col1, col2 = st.columns([3, 1])
-                
-                with col1:
-                    st.markdown(f"""
-                    **Patient:** {alert.get('PatientName', 'N/A')}
-                    **Date:** {alert.get('Date', 'N/A')}
-                    **Severity:** {alert.get('Severity', 'Medium')}
-                    **Description:** {alert.get('Description', 'No description')}
-                    """)
-                
-                with col2:
-                    if st.button("✅ Acknowledge", key=f"ack_{alert.get('AlertID')}", use_container_width=True):
-                        st.info("Alert acknowledged")
-                    
-                    if st.button("📞 Contact Care Team", key=f"contact_{alert.get('AlertID')}", use_container_width=True):
-                        st.info("Contact care team for this alert")
-                
-                st.divider()
-    else:
-        st.info("No alerts match your current severity filter.")
-else:
-    st.info("No active alerts.")
+
+
 
 ## Compose New Message
 st.markdown("---")
