@@ -23,6 +23,7 @@ def DoctorHomeNav():
     st.sidebar.page_link("pages/doctor_inbox.py", label="Inbox", icon="📥")
 
 
+
 #### ------------------------ Examples for Role of proxy ------------------------
 def ProxyHomeNav():
     # Proxy portal navigation
@@ -33,7 +34,60 @@ def ProxyHomeNav():
     st.sidebar.page_link("pages/proxy_messages.py", label="Inbox", icon="📥")
 
 
+## these need to be updated to correct user personas of Nurse, Patient, Doctor!!! @Paulo @Ronak
+def ApiTestNav():
+    st.sidebar.page_link("pages/12_API_Test.py", label="Test the API", icon="🛜")
  
+ 
+def PredictionNav():
+    st.sidebar.page_link(
+        "pages/11_Prediction.py", label="Regression Prediction", icon="📈"
+    )
+ 
+ 
+def ClassificationNav():
+    st.sidebar.page_link(
+        "pages/13_Classification.py", label="Classification Demo", icon="🌺"
+    )
+ 
+ 
+def NgoDirectoryNav():
+    st.sidebar.page_link("pages/14_NGO_Directory.py", label="NGO Directory", icon="📁")
+ 
+ 
+def AddNgoNav():
+    st.sidebar.page_link("pages/15_Add_NGO.py", label="Add New NGO", icon="➕")
+ 
+ 
+#### ------------------------ System Admin Role ------------------------
+def AdminPageNav():
+    st.sidebar.page_link("pages/20_Admin_Home.py", label="System Admin", icon="🖥️")
+    st.sidebar.page_link(
+        "pages/21_ML_Model_Mgmt.py", label="ML Model Management", icon="🏢"
+    )
+
+#### ------------------------ Nurse Role ------------------------
+def NurseDashboardNav():
+    st.sidebar.page_link("pages/xx_Nurse_Dashboard.py", label="Dashboard", icon="👩‍⚕️")
+
+
+def NursePatientsNav():
+    st.sidebar.page_link("pages/xx_Nurse_Patients.py", label="Patients", icon="👥")
+
+
+def NurseTreatmentsNav():
+    st.sidebar.page_link("pages/xx_Nurse_Treatments.py", label="Treatments", icon="💊")
+
+
+def NurseAlertsNav():
+    st.sidebar.page_link("pages/xx_Nurse_Alerts.py", label="Alerts", icon="⚠️")
+
+
+def NurseInboxNav():
+    st.sidebar.page_link("pages/xx_Nurse_Inbox.py", label="Inbox", icon="📥")
+
+
+
 # --------------------------------Links Function -----------------------------------------------
 def SideBarLinks(show_home=False):
     """
@@ -54,6 +108,21 @@ def SideBarLinks(show_home=False):
  
     ## Show the other page navigators depending on the users' role.
     if st.session_state["authenticated"]:
+
+        if st.session_state["role"] == "nurse":
+            NurseDashboardNav()
+            NursePatientsNav()
+            NurseTreatmentsNav()
+            NurseAlertsNav()
+            NurseInboxNav()
+
+        # Show World Bank Link and Map Demo Link if the user is a political strategy advisor role.
+        if st.session_state["role"] == "pol_strat_advisor":
+            PolStratAdvHomeNav()
+            WorldBankVizNav()
+            MapDemoNav()
+
+        # If the user role is usaid worker, show the Api Testing page
  
         ## Show doctor portal navigation if the user is a doctor role.
         if st.session_state["role"] == "doctor":

@@ -2,6 +2,7 @@ from flask import Blueprint, jsonify, request
 from backend.db_connection import db
 from mysql.connector import Error
 from flask import current_app
+from datetime import datetime
 
 # Create a Blueprint for Message routes
 messages = Blueprint("messages", __name__)
@@ -67,23 +68,27 @@ def create_message():
         cursor = db.get_db().cursor()
         
         # Validate required fields
-        required_fields = ["Message", "SentTime", "PostedBy", "PostedByRole"]
+        required_fields = ["Subject", "Content", "PostedBy", "PostedByRole"]
         for field in required_fields:
             if field not in data:
                 return jsonify({"error": f"Missing required field: {field}"}), 400
         
         # Insert new message
         query = """
-        INSERT INTO MessageDetails (Message, SentTime, PostedBy, PostedByRole)
-        VALUES (%s, %s, %s, %s)
+        INSERT INTO MessageDetails (Subject, Content, SentTime, PostedBy, PostedByRole, SenderType, ReadStatus, Priority)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
         """
         cursor.execute(
             query,
             (
-                data["Message"],
-                data["SentTime"],
+                data["Subject"],
+                data["Content"],
+                data.get("SentTime", datetime.now().strftime('%Y-%m-%d %H:%M:%S')),
                 data["PostedBy"],
-                data["PostedByRole"]
+                data["PostedByRole"],
+                data.get("SenderType", data["PostedByRole"]),
+                data.get("ReadStatus", False),
+                data.get("Priority", "Normal")
             ),
         )
         
@@ -92,6 +97,78 @@ def create_message():
         cursor.close()
         
         return jsonify({"message": "Message created successfully", "message_id": new_message_id}), 201
+    except Error as e:
+        return jsonify({"error": str(e)}), 500
+
+# Link message to doctor
+@messages.route("/messages/<int:message_id>/link_doctor", methods=["POST"])
+def link_message_to_doctor(message_id):
+    try:
+        data = request.get_json()
+        cursor = db.get_db().cursor()
+        
+        if "DoctorID" not in data:
+            return jsonify({"error": "DoctorID is required"}), 400
+        
+        # Insert link between message and doctor
+        query = """
+        INSERT INTO MessageDoctor (MessageID, DoctorID)
+        VALUES (%s, %s)
+        """
+        cursor.execute(query, (message_id, data["DoctorID"]))
+        
+        db.get_db().commit()
+        cursor.close()
+        
+        return jsonify({"message": "Message linked to doctor successfully"}), 200
+    except Error as e:
+        return jsonify({"error": str(e)}), 500
+
+# Link message to nurse
+@messages.route("/messages/<int:message_id>/link_nurse", methods=["POST"])
+def link_message_to_nurse(message_id):
+    try:
+        data = request.get_json()
+        cursor = db.get_db().cursor()
+        
+        if "NurseID" not in data:
+            return jsonify({"error": "NurseID is required"}), 400
+        
+        # Insert link between message and nurse
+        query = """
+        INSERT INTO MessageNurse (MessageID, NurseID)
+        VALUES (%s, %s)
+        """
+        cursor.execute(query, (message_id, data["NurseID"]))
+        
+        db.get_db().commit()
+        cursor.close()
+        
+        return jsonify({"message": "Message linked to nurse successfully"}), 200
+    except Error as e:
+        return jsonify({"error": str(e)}), 500
+
+# Link message to patient
+@messages.route("/messages/<int:message_id>/link_patient", methods=["POST"])
+def link_message_to_patient(message_id):
+    try:
+        data = request.get_json()
+        cursor = db.get_db().cursor()
+        
+        if "PatientID" not in data:
+            return jsonify({"error": "PatientID is required"}), 400
+        
+        # Insert link between message and patient
+        query = """
+        INSERT INTO MessagePatients (MessageID, PatientID)
+        VALUES (%s, %s)
+        """
+        cursor.execute(query, (message_id, data["PatientID"]))
+        
+        db.get_db().commit()
+        cursor.close()
+        
+        return jsonify({"message": "Message linked to patient successfully"}), 200
     except Error as e:
         return jsonify({"error": str(e)}), 500
 

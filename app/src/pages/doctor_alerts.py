@@ -12,12 +12,7 @@ from modules.nav import SideBarLinks
 SideBarLinks()
  
 ## Page config
-st.set_page_config(
-    page_title="Doctor Portal - Alerts",
-    page_icon="⚠️",
-    layout="wide",
-    initial_sidebar_state="expanded",
-)
+
  
 st.write("# Patient Alerts")
 st.write("View and manage patient alerts.")
@@ -51,9 +46,4 @@ for alert in alerts:
         st.markdown(f"**Description:** {alert.get('Description', 'No description')}")
         st.markdown(f"**Patient ID:** {alert.get('PatientID', 'N/A')}")
         st.markdown(f"**Timestamp:** {alert.get('Timestamp', 'N/A')}")
-        st.markdown(f"**Acknowledged:** {'Yes' if alert.get('Acknowledged') else 'No'}")
  
-        if not alert.get('Acknowledged'):
-            if st.button(f"Acknowledge Alert {alert.get('AlertID')}", key=f"ack_{alert.get('AlertID')}"):
-                st.success("Alert acknowledged!")
-                st.rerun()

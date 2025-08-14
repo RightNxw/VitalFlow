@@ -14,14 +14,7 @@ from modules.nav import SideBarLinks
 ## Add logo and navigation
 SideBarLinks()
  
-## Page config
-st.set_page_config(
-    page_title="Doctor Portal",
-    page_icon="🩺",
-    layout="wide",
-    initial_sidebar_state="expanded",
-)
- 
+
 st.write("# Doctor Portal")
 st.write("Manage patients, view alerts, and access medical records.")
  
@@ -45,6 +38,14 @@ st.markdown(
         display: flex;
         align-items: center;
         background: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+ 
+      .patient-card:hover {
+        border-color: #0068c9;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        transform: translateY(-2px);
       }
  
       .patient-avatar {
@@ -92,8 +93,96 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
- 
- 
+
+## Patient card renderer with clickable functionality
+def render_patient_card(patient_data):
+    """Render a clickable patient card with detailed information"""
+    if not patient_data:
+        return
+
+    patient = patient_data.get('patient', {})
+    visits = patient_data.get('visits', [])
+    vitals = patient_data.get('vitals', [])
+    conditions = patient_data.get('conditions', [])
+    medications = patient_data.get('medications', [])
+
+    ## Get admit date - check multiple sources
+    admit_date = 'N/A'
+    
+    # First check if patient has a direct VisitID
+    if patient.get('VisitID'):
+        try:
+            visit_response = requests.get(f"{API_BASE_URL}/visit/visits/{patient.get('VisitID')}")
+            if visit_response.status_code == 200:
+                visit_data = visit_response.json()
+                admit_date = visit_data.get('AppointmentDate', 'N/A')
+        except:
+            pass
+    
+    # If no direct visit, check the visits list
+    if admit_date == 'N/A' and visits:
+        latest_visit = visits[-1] if len(visits) > 0 else {}
+        admit_date = latest_visit.get('AppointmentDate', 'N/A')
+    
+    # Format the admit date if we have one
+    if admit_date and admit_date != 'N/A':
+        try:
+            # Handle different date formats
+            if isinstance(admit_date, str):
+                if 'T' in admit_date:  # ISO format
+                    admit_date = datetime.fromisoformat(admit_date.replace('Z', '+00:00')).strftime('%m/%d/%Y')
+                else:  # Date only format
+                    admit_date = datetime.strptime(admit_date, '%Y-%m-%d').strftime('%m/%d/%Y')
+        except:
+            admit_date = str(admit_date)
+
+    ## Get patient initials for avatar
+    first_name = patient.get('FirstName', '')
+    last_name = patient.get('LastName', '')
+    initials = f"{first_name[0] if first_name else 'P'}{last_name[0] if last_name else 'T'}"
+
+    ## Create expandable patient card
+    with st.expander(f"👤 {patient.get('FirstName', 'N/A')} {patient.get('LastName', 'N/A')} - Admitted: {admit_date}", expanded=False):
+        col1, col2 = st.columns([1, 3])
+        
+        with col1:
+            st.markdown(f"""
+            <div style="text-align: center;">
+                <div style="width: 80px; height: 80px; border-radius: 50%; border: 3px solid #333; 
+                     display: flex; align-items: center; justify-content: center; 
+                     font-size: 32px; background: #f8f9fa; margin: 0 auto;">
+                    {initials}
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            ## Basic patient information
+            st.markdown("#### Patient Information")
+            col_info1, col_info2 = st.columns(2)
+            
+            with col_info1:
+                st.write(f"**Patient ID:** {patient.get('PatientID', 'N/A')}")
+                st.write(f"**Date of Birth:** {patient.get('DOB', 'N/A')}")
+                st.write(f"**Blood Type:** {patient.get('BloodType', 'N/A')}")
+            
+            with col_info2:
+                st.write(f"**Weight:** {patient.get('Weight', 'N/A')} lbs")
+                st.write(f"**Visit Status:** {visits[-1].get('Status', 'N/A') if visits else 'N/A'}")
+                st.write(f"**Next Visit:** {visits[-1].get('NextVisitDate', 'N/A') if visits else 'N/A'}")
+            
+            ## Patient medications
+            if medications and len(medications) > 0:
+                st.markdown("#### Current Medications")
+                try:
+                    # Ensure medications is a list of dictionaries
+                    if isinstance(medications, list) and all(isinstance(m, dict) for m in medications):
+                        meds_df = pd.DataFrame(medications)
+                        st.dataframe(meds_df, use_container_width=True)
+                    else:
+                        st.info("Medications data format not supported")
+                except Exception as e:
+                    st.error(f"Error displaying medications: {str(e)}")
  
 ## API functions with proper error handling
 def get_doctors():
@@ -152,13 +241,27 @@ def get_patient_details(patient_id):
         except:
             medications = []
  
-        ## Get patient visits
+        ## Get patient visits - try multiple approaches
+        patient_visits = []
+        
+        # Method 1: Get all visits and filter by patient ID
         try:
             visits_response = requests.get(f"{API_BASE_URL}/visit/visits")
-            visits = visits_response.json() if visits_response.status_code == 200 else []
-            patient_visits = [v for v in visits if v.get('PatientID') == patient_id]
+            if visits_response.status_code == 200:
+                all_visits = visits_response.json()
+                patient_visits = [v for v in all_visits if v.get('PatientID') == patient_id]
         except:
-            patient_visits = []
+            pass
+        
+        # Method 2: If patient has VisitID, get that specific visit
+        if not patient_visits and patient.get('VisitID'):
+            try:
+                specific_visit_response = requests.get(f"{API_BASE_URL}/visit/visits/{patient.get('VisitID')}")
+                if specific_visit_response.status_code == 200:
+                    specific_visit = specific_visit_response.json()
+                    patient_visits = [specific_visit]
+            except:
+                pass
  
         return {
             'patient': patient,
@@ -167,7 +270,7 @@ def get_patient_details(patient_id):
             'medications': medications,
             'visits': patient_visits
         }
-    except:
+    except Exception as e:
         return None
  
 def get_visits():
@@ -179,7 +282,11 @@ def get_visits():
         return []
     except:
         st.warning("Could not connect to visits API, using dummy data.")
-        return [{"VisitID": 1, "PatientID": 1, "Status": "Active", "AppointmentDate": "2024-01-15"}]
+        return [
+            {"VisitID": 1, "PatientID": 1, "Status": "Active", "AppointmentDate": "2024-01-15"},
+            {"VisitID": 2, "PatientID": 2, "Status": "Active", "AppointmentDate": "2024-01-20"},
+            {"VisitID": 3, "PatientID": 1, "Status": "Scheduled", "AppointmentDate": "2024-02-01", "NextVisitDate": "2024-02-01"}
+        ]
  
 def get_vitals():
     """Get all vital charts from API"""
@@ -240,60 +347,6 @@ if doctors:
 else:
     st.markdown("### Welcome, Dr. Ellison")
  
- 
- 
-##  search bar
-top_left, top_spacer, top_right = st.columns([6, 1, 1])
-with top_left:
-    global_search = st.text_input("Search", placeholder="Search patients, conditions, medications...", label_visibility="visible")
- 
-## Patient card renderer
-def render_patient_card(patient_data):
-    """Render a patient card with simplified information"""
-    if not patient_data:
-        return
-
-    patient = patient_data.get('patient', {})
-    visits = patient_data.get('visits', [])
-
-    ## Get latest visit for admit date
-    latest_visit = visits[-1] if len(visits) > 0 else {}
-
-    ## Format admit date
-    admit_date = latest_visit.get('AppointmentDate', 'N/A')
-    if admit_date and admit_date != 'N/A':
-        try:
-            admit_date = datetime.strptime(admit_date, '%Y-%m-%d').strftime('%m/%d/%Y')
-        except:
-            pass
-
-    ## Get patient initials for avatar
-    first_name = patient.get('FirstName', '')
-    last_name = patient.get('LastName', '')
-    initials = f"{first_name[0] if first_name else 'P'}{last_name[0] if last_name else 'T'}"
-
-    card_html = f"""
-    <div class="patient-card">
-        <div class="patient-avatar">{initials}</div>
-        <div class="patient-info">
-            <div class="patient-field">Patient Name: <strong>{patient.get('FirstName', 'N/A')} {patient.get('LastName', 'N/A')}</strong></div>
-            <div class="patient-field">Admit Date: <strong>{admit_date}</strong></div>
-        </div>
-    </div>
-    """
-
-    col1, col2, col3 = st.columns([4, 1, 1])
-    with col1:
-        st.markdown(card_html, unsafe_allow_html=True)
-    with col2:
-        if st.button("📊 Chart", key=f"chart_{patient.get('PatientID')}", use_container_width=True):
-            st.session_state.selected_patient = patient.get('PatientID')
-            st.session_state.page = "👥 Patients"
-            st.rerun()
-    with col3:
-        if st.button("💊 Meds", key=f"meds_{patient.get('PatientID')}", use_container_width=True):
-            st.info(f"Medications for {patient.get('FirstName', 'Patient')}")
- 
 ## Dashboard Overview
 st.markdown("### Dashboard Overview")
  
@@ -351,16 +404,17 @@ with col4:
  
 st.markdown("---")
  
-# Patient search and list
-patient_search = st.text_input("Patient Search", placeholder="Search patients by name...", label_visibility="visible")
+## Consolidated search functionality
+st.markdown("### Patient Search & Management")
+patient_search = st.text_input("Search Patients", placeholder="Search patients by name...", label_visibility="visible")
  
-st.markdown("### Recent Patients")
- 
+## Get all patients and filter based on search
+all_patients = get_patients()
 if patient_search:
     # Search patients by their names
     filtered_patients = []
-    if patients:
-        for patient in patients:
+    if all_patients:
+        for patient in all_patients:
             full_name = f"{patient.get('FirstName', '')} {patient.get('LastName', '')}".lower()
             if patient_search.lower() in full_name:
                 filtered_patients.append(patient)
@@ -369,15 +423,16 @@ if patient_search:
         st.info(f"Found {len(filtered_patients)} patients matching '{patient_search}'")
     else:
         st.warning(f"No patients found matching '{patient_search}'")
-        filtered_patients = patients[:4]  # Show default list
+        filtered_patients = []
 else:
-    filtered_patients = patients[:4] if patients else []
+    filtered_patients = all_patients if all_patients else []
  
-# Get patient details and render patient cards
+## Display patient cards
 if filtered_patients:
     for patient in filtered_patients:
         patient_details = get_patient_details(patient.get('PatientID'))
-        render_patient_card(patient_details)
+        if patient_details:
+            render_patient_card(patient_details)
 else:
     st.info("No patient data available.")
  
