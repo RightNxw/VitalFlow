@@ -161,3 +161,32 @@ def acknowledge_alert(alert_id):
         return jsonify({"message": "Alert acknowledged successfully"}), 200
     except Error as e:
         return jsonify({"error": str(e)}), 500
+
+
+# Delete a specific alert (when acknowledged)
+# Available to Doctor-1.7, Nurse-2.8
+@alerts.route("/<int:alert_id>", methods=["DELETE"])
+def delete_alert(alert_id):
+    try:
+        cursor = db.get_db().cursor()
+        
+        # Check if alert exists
+        cursor.execute("SELECT * FROM AlertDetails WHERE AlertID = %s", (alert_id,))
+        if not cursor.fetchone():
+            return jsonify({"error": "Alert not found"}), 404
+        
+        # Delete alert links first (due to foreign key constraints)
+        cursor.execute("DELETE FROM AlertsDoctors WHERE AlertID = %s", (alert_id,))
+        cursor.execute("DELETE FROM AlertsNurse WHERE AlertID = %s", (alert_id,))
+        
+        # Delete the alert itself
+        cursor.execute("DELETE FROM AlertDetails WHERE AlertID = %s", (alert_id,))
+        
+        db.get_db().commit()
+        cursor.close()
+        
+        current_app.logger.info(f'Alert {alert_id} deleted successfully')
+        return jsonify({"message": "Alert deleted successfully"}), 200
+    except Error as e:
+        current_app.logger.error(f'Database error in delete_alert: {str(e)}')
+        return jsonify({"error": str(e)}), 500

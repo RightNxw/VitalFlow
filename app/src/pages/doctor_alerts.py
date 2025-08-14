@@ -84,6 +84,24 @@ def get_alert(alert_id):
     except:
         return None
 
+def delete_alert(alert_id):
+    """Delete an alert (acknowledge it)"""
+    try:
+        response = requests.delete(f"{API_BASE_URL}/alert/{alert_id}")
+        if response.status_code == 200:
+            # Store success message in session state
+            st.session_state['delete_success'] = f"Alert {alert_id} acknowledged and deleted!"
+            return True
+        elif response.status_code == 404:
+            st.info("No data found for this alert")
+            return False
+        else:
+            st.error(f"Failed to delete alert: {response.status_code}")
+            return False
+    except:
+        st.error("Connection error - please try again")
+        return False
+
 ## Get alerts for current doctor
 doctor_id = st.session_state.get('current_doctor_id', DEFAULT_DOCTOR_ID)
 
@@ -144,9 +162,10 @@ with left:
                 st.rerun()
     with c2:
         if st.button("Acknowledge", type="primary", use_container_width=True, disabled=(int(selected_id) <= 0)):
-            if ack_alert(int(selected_id), int(doctor_id)):
-                st.success("Acknowledged")
+            if delete_alert(int(selected_id)):
                 st.rerun()
+            else:
+                st.error("Failed to delete alert")
 
 with right:
     st.markdown("### ✨ Create Alert")
@@ -203,4 +222,10 @@ if sel_alert_id:
         st.error("Could not load alert details")
 else:
     st.info("Select an alert in the table above to view details")
+
+# Display success message if exists
+if 'delete_success' in st.session_state:
+    st.success(st.session_state['delete_success'])
+    # Clear the message after displaying
+    del st.session_state['delete_success']
  

@@ -64,6 +64,16 @@ def get_doctors():
     except:
         return []
 
+def get_patients():
+    """Get all patients for recipient selection"""
+    try:
+        response = requests.get(f"{API_BASE_URL}/patient/")
+        if response.status_code == 200:
+            return response.json()
+        return []
+    except:
+        return []
+
 def create_message(subject, content, recipient_type, recipient_id, priority, sender_id, sender_role):
     """Create and send a new message"""
     try:
@@ -100,13 +110,16 @@ def create_message(subject, content, recipient_type, recipient_id, priority, sen
                 if link_response.status_code == 200:
                     return True
                 else:
+                    st.error("Message created but failed to link to recipient")
                     return False
             else:
+                st.error("Message created but no message ID returned")
                 return False
         else:
+            st.error(f"Failed to create message: {response.status_code}")
             return False
-        
     except Exception as e:
+        st.error(f"Error creating message: {str(e)}")
         return False
 
 def get_messages(nurse_id):
@@ -122,6 +135,24 @@ def get_messages(nurse_id):
             {"MessageID": 1, "Subject": "Patient Update", "Content": "Patient condition improved", "Priority": "Normal", "SentTime": "2024-01-15 10:30:00", "SenderType": "Doctor", "PostedBy": 1, "ReadStatus": False},
             {"MessageID": 2, "Subject": "Schedule Change", "Content": "Your shift has been changed to 3-11 PM", "Priority": "High", "SentTime": "2024-01-16 08:00:00", "SenderType": "System", "PostedBy": 1, "ReadStatus": True}
         ]
+
+def delete_message(message_id):
+    """Delete a message (acknowledge it)"""
+    try:
+        response = requests.delete(f"{API_BASE_URL}/message/messages/{message_id}")
+        if response.status_code == 200:
+            # Store success message in session state
+            st.session_state['delete_success'] = f"Message {message_id} acknowledged and deleted!"
+            return True
+        elif response.status_code == 404:
+            st.info("No data found for this message")
+            return False
+        else:
+            st.error(f"Failed to delete message: {response.status_code}")
+            return False
+    except:
+        st.error("Connection error - please try again")
+        return False
 
 ## Get nurse information
 # Try to get nurse by name first, then fall back to first nurse
@@ -145,33 +176,17 @@ st.markdown(f"### Welcome, {nurse_name}")
 
 st.markdown("---")
 
-## Inbox Overview
-st.markdown("## 📊 Inbox Overview")
-
+## Get messages for current nurse
 messages = get_messages(nurse_id)
 
-# Summary metrics
-col1, col2, col3 = st.columns(3)
-
-with col1:
-    total_messages = len(messages)
-    st.metric("Total Messages", total_messages)
-
-with col2:
-    unread_messages = len([m for m in messages if not m.get('ReadStatus', False)])
-    st.metric("Unread Messages", unread_messages)
-
-with col3:
-    high_priority = len([m for m in messages if m.get('Priority') == 'High'])
-    st.metric("High Priority", high_priority)
-
-st.markdown("---")
-
-## Compose Message Section
-st.markdown("## ✉️ Compose Message")
+# Display success message if exists (moved to top)
+if 'delete_success' in st.session_state:
+    st.success(st.session_state['delete_success'])
+    # Clear the message after displaying
+    del st.session_state['delete_success']
 
 # Create two columns for inbox and compose
-col1, col2 = st.columns([2, 1])
+col1, col2 = st.columns([1.5, 1])  # Give compose section more space
 
 with col1:
     st.markdown("### 📥 Inbox")
@@ -186,6 +201,17 @@ with col1:
                 st.markdown(f"**Content:** {message.get('Content', 'No content')}")
                 st.markdown(f"**Read:** {'Yes' if message.get('ReadStatus') else 'No'}")
                 st.markdown(f"**Priority:** {message.get('Priority', 'Normal')}")
+                
+                # Add acknowledge/delete button
+                col1_inner, col2_inner = st.columns([3, 1])
+                with col1_inner:
+                    st.markdown(f"**Message ID:** {message.get('MessageID', 'N/A')}")
+                with col2_inner:
+                    if st.button("✅ Acknowledge", key=f"ack_{message.get('MessageID')}", use_container_width=True):
+                        if delete_message(message.get('MessageID')):
+                            st.rerun()
+                        else:
+                            st.error("Failed to delete message")
 
 with col2:
     st.markdown("### ✉️ Compose Message")
@@ -194,7 +220,7 @@ with col2:
     if 'recipient_type' not in st.session_state:
         st.session_state.recipient_type = "doctor"
     
-    recipient_type = st.selectbox("Send to:", ["doctor", "nurse"], key="recipient_type_selector")
+    recipient_type = st.selectbox("Send to:", ["doctor", "nurse", "patient"], key="recipient_type_selector")
     
     # Update session state when selection changes
     if st.session_state.recipient_type != recipient_type:
@@ -207,15 +233,9 @@ with col2:
     if st.session_state.recipient_type == "doctor":
         doctors = get_doctors()
         if doctors:
-            # Filter out current nurse
-            other_doctors = [d for d in doctors if d.get('DoctorID') != nurse_id]
-            if other_doctors:
-                recipient_options = {f"Dr. {d.get('LastName', '')} ({d.get('Specialty', '')})": d.get('DoctorID') for d in other_doctors}
-                recipient = st.selectbox("Select Doctor:", list(recipient_options.keys()), key="doctor_selector")
-                recipient_id = recipient_options[recipient] if recipient else None
-            else:
-                st.warning("No other doctors available")
-                recipient_id = None
+            recipient_options = {f"Dr. {d.get('LastName', '')} ({d.get('Specialty', '')})": d.get('DoctorID') for d in doctors}
+            recipient = st.selectbox("Select Doctor:", list(recipient_options.keys()), key="doctor_selector")
+            recipient_id = recipient_options[recipient] if recipient else None
         else:
             st.warning("No doctors available")
             recipient_id = None
@@ -235,11 +255,21 @@ with col2:
         else:
             st.warning("No nurses available")
             recipient_id = None
+            
+    elif st.session_state.recipient_type == "patient":
+        patients = get_patients()
+        if patients:
+            recipient_options = {f"{p.get('FirstName', '')} {p.get('LastName', '')} (ID: {p.get('PatientID', '')})": p.get('PatientID') for p in patients}
+            recipient = st.selectbox("Select Patient:", list(recipient_options.keys()), key="patient_selector")
+            recipient_id = recipient_options[recipient] if recipient else None
+        else:
+            st.warning("No patients available")
+            recipient_id = None
     
     # Message composition form
     with st.form("compose_message"):
         subject = st.text_input("Subject", placeholder="Enter message subject...", key="subject_input")
-        content = st.text_area("Message", placeholder="Type your message here...", height=150, key="content_input")
+        content = st.text_area("Message", placeholder="Type your message here...", height=120, key="content_input")
         
         # Priority selection
         priority = st.selectbox("Priority:", ["Normal", "High", "Urgent"], key="priority_input")

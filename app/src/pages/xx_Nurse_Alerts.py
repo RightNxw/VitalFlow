@@ -86,6 +86,31 @@ def create_alert(payload: dict):
         return None
 
 
+def delete_alert(alert_id: int):
+    """Delete an alert (acknowledge it)"""
+    try:
+        r = requests.delete(f"{API_BASE}/alert/{alert_id}", timeout=10)
+        if r.status_code == 200:
+            # Store success message in session state
+            st.session_state['delete_success'] = f"Alert {alert_id} acknowledged and deleted!"
+            return True
+        elif r.status_code == 404:
+            st.info("No data found for this alert")
+            return False
+        else:
+            st.error(f"DELETE /alert/{alert_id} → {r.status_code}")
+            return False
+    except requests.exceptions.RequestException as ex:
+        st.error(f"Delete alert failed at {API_BASE}. Details: {ex}")
+        return False
+
+
+# Display success message if exists
+if 'delete_success' in st.session_state:
+    st.success(st.session_state['delete_success'])
+    # Clear the message after displaying
+    del st.session_state['delete_success']
+
 # Medical-themed header
 st.markdown("""
 <div style="text-align: center; margin-bottom: 2rem;">
@@ -156,9 +181,10 @@ with left:
             st.rerun()
     with c2:
         if st.button("Acknowledge", type="primary", use_container_width=True, disabled=(int(selected_id) <= 0)):
-            if ack_alert(int(selected_id), DEFAULT_NURSE_ID):
-                st.success("Acknowledged")
+            if delete_alert(int(selected_id)):
                 st.rerun()
+            else:
+                st.error("Failed to delete alert")
 
 with right:
     st.markdown("### ✨ Create Alert")

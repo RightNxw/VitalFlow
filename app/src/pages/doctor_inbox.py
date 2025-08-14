@@ -119,12 +119,36 @@ def create_message(subject, content, recipient_type, recipient_id, priority, sen
     except Exception as e:
         return False
 
+def delete_message(message_id):
+    """Delete a message (acknowledge it)"""
+    try:
+        response = requests.delete(f"{API_BASE_URL}/message/messages/{message_id}")
+        if response.status_code == 200:
+            # Store success message in session state
+            st.session_state['delete_success'] = f"Message {message_id} acknowledged and deleted!"
+            return True
+        elif response.status_code == 404:
+            st.info("No data found for this message")
+            return False
+        else:
+            st.error(f"Failed to delete message: {response.status_code}")
+            return False
+    except:
+        st.error("Connection error - please try again")
+        return False
+
 # Get current doctor information
 doctor_id = st.session_state.get('current_doctor_id', 1)
 messages = get_messages(doctor_id)
 
+# Display success message if exists (moved to top)
+if 'delete_success' in st.session_state:
+    st.success(st.session_state['delete_success'])
+    # Clear the message after displaying
+    del st.session_state['delete_success']
+
 # Create two columns for inbox and compose
-col1, col2 = st.columns([2, 1])
+col1, col2 = st.columns([1.5, 1])  # Give compose section more space
 
 with col1:
     st.markdown("### 📥 Inbox")
@@ -139,6 +163,17 @@ with col1:
                 st.markdown(f"**Content:** {message.get('Content', 'No content')}")
                 st.markdown(f"**Read:** {'Yes' if message.get('ReadStatus') else 'No'}")
                 st.markdown(f"**Priority:** {message.get('Priority', 'Normal')}")
+                
+                # Add acknowledge/delete button
+                col1_inner, col2_inner = st.columns([3, 1])
+                with col1_inner:
+                    st.markdown(f"**Message ID:** {message.get('MessageID', 'N/A')}")
+                with col2_inner:
+                    if st.button("✅ Acknowledge", key=f"ack_{message.get('MessageID')}", use_container_width=True):
+                        if delete_message(message.get('MessageID')):
+                            st.rerun()
+                        else:
+                            st.error("Failed to delete message")
 
 with col2:
     st.markdown("### ✉️ Compose Message")
@@ -196,7 +231,7 @@ with col2:
     # Message composition form
     with st.form("compose_message"):
         subject = st.text_input("Subject", placeholder="Enter message subject...", key="subject_input")
-        content = st.text_area("Message", placeholder="Type your message here...", height=150, key="content_input")
+        content = st.text_area("Message", placeholder="Type your message here...", height=120, key="content_input")
         
         # Priority selection
         priority = st.selectbox("Priority:", ["Normal", "High", "Urgent"], key="priority_input")
