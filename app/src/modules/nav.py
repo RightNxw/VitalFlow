@@ -21,20 +21,18 @@ def DoctorHomeNav():
     st.sidebar.page_link("pages/doctor_patients.py", label="Patients", icon="👥")
     st.sidebar.page_link("pages/doctor_alerts.py", label="Alerts", icon="⚠️")
     st.sidebar.page_link("pages/doctor_inbox.py", label="Inbox", icon="📥")
- 
- 
- 
-def WorldBankVizNav():
-    st.sidebar.page_link(
-        "pages/01_World_Bank_Viz.py", label="World Bank Visualization", icon="🏦"
-    )
- 
- 
-def MapDemoNav():
-    st.sidebar.page_link("pages/02_Map_Demo.py", label="Map Demonstration", icon="🗺️")
- 
- 
-## ------------------------ Examples for Role of usaid_worker ------------------------
+
+
+
+#### ------------------------ Examples for Role of proxy ------------------------
+def ProxyHomeNav():
+    # Proxy portal navigation
+    
+    st.sidebar.page_link("pages/proxy_home.py", label="Home", icon="🏠")
+    st.sidebar.page_link("pages/proxy_portal.py", label="Portal", icon="👥")
+    st.sidebar.page_link("pages/proxy_billing.py", label="Billing", icon="💰")
+    st.sidebar.page_link("pages/proxy_messages.py", label="Inbox", icon="📥")
+
 
 ## these need to be updated to correct user personas of Nurse, Patient, Doctor!!! @Paulo @Ronak
 def ApiTestNav():
@@ -89,6 +87,7 @@ def NurseInboxNav():
     st.sidebar.page_link("pages/xx_Nurse_Inbox.py", label="Inbox", icon="📥")
 
 
+
 # --------------------------------Links Function -----------------------------------------------
 def SideBarLinks(show_home=False):
     """
@@ -128,18 +127,10 @@ def SideBarLinks(show_home=False):
         ## Show doctor portal navigation if the user is a doctor role.
         if st.session_state["role"] == "doctor":
             DoctorHomeNav()
- 
-        ## If the user role is usaid worker, show the Api Testing page
-        if st.session_state["role"] == "usaid_worker":
-            PredictionNav()
-            ApiTestNav()
-            ClassificationNav()
-            NgoDirectoryNav()
-            AddNgoNav()
- 
-        ## If the user is an administrator, give them access to the administrator pages
-        if st.session_state["role"] == "administrator":
-            AdminPageNav()
+
+        ## Show proxy portal navigation if the user is a proxy role.
+        if st.session_state["role"] == "proxy":
+            ProxyHomeNav()
  
     ## Always show the About page at the bottom of the list of links
     AboutPageNav()

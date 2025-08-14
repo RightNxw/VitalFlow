@@ -69,21 +69,22 @@ if st.button("Act as Maya, a Doctor",
     st.switch_page('pages/doctor_home.py')
 
 
-if st.button('Act as Mohammad, an USAID worker', ### we will need to change this
+if st.button('Act as Nic Nevin, a Nurse', ## Updated to Nurse
+
             type = 'primary', 
             use_container_width=True):
     st.session_state['authenticated'] = True
     st.session_state['role'] = 'usaid_worker'
-    st.session_state['first_name'] = 'Mohammad'
-    st.switch_page('pages/10_USAID_Worker_Home.py')
+    st.session_state['first_name'] = 'Nic'
+    st.switch_page('pages/nurse_home.py')
 
-if st.button('Act as System Administrator',  # we will need to change this
+if st.button('Act as Nina Pesci, a Proxy',  ## Updated to Proxy
             type = 'primary', 
             use_container_width=True):
     st.session_state['authenticated'] = True
-    st.session_state['role'] = 'administrator'
-    st.session_state['first_name'] = 'SysAdmin'
-    st.switch_page('pages/20_Admin_Home.py')
+    st.session_state['role'] = 'proxy'
+    st.session_state['first_name'] = 'Nina'
+    st.switch_page('pages/proxy_home.py')
 
 
 
