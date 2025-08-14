@@ -61,7 +61,7 @@ def get_insurance_info(patient_id):
         return []
     except:
         st.warning("Could not connect to insurance API, using dummy data.")
-        return [{"InsuranceProvider": "Blue Cross", "PolicyNumber": "BC123456", "Deductible": 1000.00, "CoverageType": "Family", "GroupNumber": "GRP789"}]
+        return [{"InsuranceProvider": "Blue Cross", "PolicyNumber": "BC123456", "Deductible": 1000.00, "DueDate": "2024-12-31"}]
 
 ## Get proxy information
 proxies = get_proxies()
@@ -87,98 +87,59 @@ dependent_patients = get_proxy_patients(proxy_id)
 
 if dependent_patients:
     # Summary metrics
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3 = st.columns(3)
     
     with col1:
         total_patients = len(dependent_patients)
-        st.metric("Total Dependents", total_patients)
+        st.metric("Number of Dependents", total_patients)
     
     with col2:
-        total_insurance = sum(len(get_insurance_info(p.get('PatientID'))) for p in dependent_patients)
-        st.metric("Insurance Policies", total_insurance)
+        # Get provider names
+        providers = set()
+        for p in dependent_patients:
+            insurance_info = get_insurance_info(p.get('PatientID'))
+            if insurance_info:
+                for ins in insurance_info:
+                    if isinstance(ins, dict) and 'InsuranceProvider' in ins:
+                        providers.add(ins['InsuranceProvider'])
+        st.metric("Insurance Providers", len(providers))
     
     with col3:
-        total_deductible = sum(
-            sum(ins.get('Deductible', 0) for ins in get_insurance_info(p.get('PatientID')))
-            for p in dependent_patients
-        )
+        # Calculate total deductible safely
+        total_deductible = 0
+        for p in dependent_patients:
+            insurance_info = get_insurance_info(p.get('PatientID'))
+            if insurance_info:
+                for ins in insurance_info:
+                    if isinstance(ins, dict) and 'Deductible' in ins:
+                        try:
+                            deductible = float(ins['Deductible'])
+                            total_deductible += deductible
+                        except (ValueError, TypeError):
+                            pass
         st.metric("Total Deductible", f"${total_deductible:,.2f}")
     
-    with col4:
-        outstanding_balance = 0.00  # This would come from billing API
-        st.metric("Outstanding Balance", f"${outstanding_balance:,.2f}")
-    
     st.markdown("---")
     
-    ## Individual Patient Billing
-    st.markdown("## 🏥 Patient Insurance & Billing Details")
+    ## Insurance Details
+    st.markdown("## 🏥 Insurance Details")
     
     for patient in dependent_patients:
-        with st.expander(f"📋 {patient.get('FirstName', '')} {patient.get('LastName', '')} - Insurance & Billing", expanded=True):
-            col1, col2 = st.columns(2)
+        with st.expander(f"📋 {patient.get('FirstName', '')} {patient.get('LastName', '')}", expanded=True):
+            insurance_info = get_insurance_info(patient.get('PatientID'))
             
-            with col1:
-                st.markdown("### 🏥 Insurance Details")
-                insurance_info = get_insurance_info(patient.get('PatientID'))
-                
-                if insurance_info:
-                    for insurance in insurance_info:
-                        st.markdown(f"""
-                        **Provider:** {insurance.get('InsuranceProvider', 'N/A')}
-                        **Policy Number:** {insurance.get('PolicyNumber', 'N/A')}
-                        **Deductible:** ${insurance.get('Deductible', 'N/A')}
-                        **Coverage Type:** {insurance.get('CoverageType', 'N/A')}
-                        **Group Number:** {insurance.get('GroupNumber', 'N/A')}
-                        """)
-                        
-                        # Insurance actions
-                        if st.button("📄 View Policy", key=f"policy_{patient.get('PatientID')}_{insurance.get('PolicyNumber', '')}", use_container_width=True):
-                            st.info(f"Policy details for {insurance.get('InsuranceProvider', 'Insurance')}")
-                        
-                        if st.button("📞 Contact Provider", key=f"contact_{patient.get('PatientID')}_{insurance.get('PolicyNumber', '')}", use_container_width=True):
-                            st.info(f"Contact {insurance.get('InsuranceProvider', 'Insurance Provider')}")
-                else:
-                    st.info("No insurance information available")
-            
-            with col2:
-                st.markdown("### 💳 Billing Summary")
-                st.markdown(f"""
-                **Patient:** {patient.get('FirstName', '')} {patient.get('LastName', '')}
-                **Patient ID:** {patient.get('PatientID', 'N/A')}
-                **Last Billing Date:** {datetime.now().strftime('%m/%d/%Y')}
-                **Outstanding Balance:** $0.00
-                **Next Payment Due:** N/A
-                **Payment Method:** Credit Card on File
-                """)
-                
-                # Billing actions
-                if st.button("📄 Download Statement", key=f"download_{patient.get('PatientID')}", use_container_width=True):
-                    st.info("Statement download initiated")
-                
-                if st.button("💳 Make Payment", key=f"payment_{patient.get('PatientID')}", use_container_width=True):
-                    st.info("Payment portal would open here")
-                
-                if st.button("📧 Request Billing Info", key=f"request_{patient.get('PatientID')}", use_container_width=True):
-                    st.info("Billing information request sent")
-            
-            st.divider()
-    
-    ## Payment History
-    st.markdown("---")
-    st.markdown("## 📈 Payment History")
-    
-    # Dummy payment history data
-    payment_history = [
-        {"Date": "2024-01-15", "Patient": "Joe Pesci", "Amount": 150.00, "Status": "Paid"},
-        {"Date": "2024-01-10", "Patient": "Maria Pesci", "Amount": 200.00, "Status": "Paid"},
-        {"Date": "2024-01-05", "Patient": "Joe Pesci", "Amount": 75.00, "Status": "Paid"}
-    ]
-    
-    if payment_history:
-        df = pd.DataFrame(payment_history)
-        st.dataframe(df, use_container_width=True)
-    else:
-        st.info("No payment history available")
+            if insurance_info:
+                for insurance in insurance_info:
+                    st.markdown(f"""
+                    **Provider:** {insurance.get('InsuranceProvider', 'N/A')}
+                    **Deductible:** ${insurance.get('Deductible', 'N/A')}
+                    **Due Date:** {insurance.get('DueDate', 'N/A')}
+                    """)
+                    
+                    st.divider()
+            else:
+                st.info("No insurance information available")
+                st.divider()
     
 else:
     st.info("No dependent patients found for billing information.")

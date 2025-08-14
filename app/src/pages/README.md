@@ -19,6 +19,7 @@ Proxy
         - ## UPDATE HERE @PAULO @RICARDO @RONAK @NICK
         - Landing/home page proxy_home.py
         - Inbox for all messages proxy_inbox.py
+        - billing for all proxy_billing.py
         - Portal for patient portal info proxy_portal.py
 
 Patient
