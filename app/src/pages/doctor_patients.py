@@ -271,10 +271,23 @@ def show_patient_details():
     with tab4:
         st.markdown("### Current Medications")
         if medications:
-            for med in medications:
-                with st.expander(f"Medication: {med.get('MedicationName', 'N/A')}"):
-                    st.markdown(f"**Dosage:** {med.get('Dosage', 'N/A')}")
-                    st.markdown(f"**Frequency:** {med.get('Frequency', 'N/A')}")
+            # Create DataFrame for better display
+            df_m = pd.DataFrame(medications)
+            if not df_m.empty:
+                # Friendly column order if present
+                order = [
+                    "PrescriptionName", "DosageAmount", "DosageUnit", "FrequencyAmount", "FrequencyPeriod",
+                    "PickUpLocation", "RefillsLeft", "PrescribedDate", "EndDate", "MedicationID"
+                ]
+                cols = [c for c in order if c in df_m.columns]
+                # Ensure date-like columns render nicely
+                for c in ["PrescribedDate", "EndDate"]:
+                    if c in df_m.columns:
+                        df_m[c] = pd.to_datetime(df_m[c], errors="coerce").dt.date
+                
+                st.dataframe(df_m[cols] if cols else df_m, use_container_width=True, hide_index=True)
+            else:
+                st.info("No medications found")
         else:
             st.info("No medications found")
 
