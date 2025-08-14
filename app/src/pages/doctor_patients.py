@@ -496,7 +496,7 @@ def show_patient_medications():
                 }
                 
                 if update_patient_medications(patient_id, medication_data):
-                    st.success("Medication prescribed successfully!")
+                    st.success("Medication prescribed successfulIly!")
                     st.rerun()
                 else:
                     st.error("Failed to prescribe medication")

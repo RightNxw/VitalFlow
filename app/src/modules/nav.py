@@ -97,9 +97,11 @@ def NurseInboxNav():
 def PatientHomeNav():
     st.sidebar.page_link("pages/50_Patient_Home.py", label="Home", icon="🏠")
 
-
-def PatientPortalNav():
-    st.sidebar.page_link("pages/50_Patient_Home.py", label="Portal", icon="❤️")
+def PatientNav():
+    """Patient portal navigation with all three main pages"""
+    st.sidebar.page_link("pages/50_Patient_Home.py", label="Portal", icon="🏠")
+    st.sidebar.page_link("pages/51_Patient_Billing.py", label="Billing", icon="💰")
+    st.sidebar.page_link("pages/52_Patient_Inbox.py", label="Inbox", icon="📬")
 
 
 def PatientBillingNav():
@@ -150,11 +152,7 @@ def SideBarLinks(show_home=False):
  
         ## Show patient portal navigation if the user is a patient role.
         if st.session_state["role"] == "patient":
-            PatientHomeNav()
-            PatientPortalNav()
-            PatientBillingNav()
-            PatientInboxNav()
-            PatientSettingsNav()
+            PatientNav()
  
         ## If the user role is usaid worker, show the Api Testing page
         if st.session_state["role"] == "usaid_worker":
