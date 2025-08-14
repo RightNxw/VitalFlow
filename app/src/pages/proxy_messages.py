@@ -1,16 +1,13 @@
-## Proxy Messages - Inbox & Alerts
+## Proxy Messages - Inbox & Message Creation
 
 import logging
 logger = logging.getLogger(__name__)
 import streamlit as st
-import pandas as pd
 import requests
 from datetime import datetime
 from streamlit_extras.app_logo import add_logo
 from modules.nav import SideBarLinks
-
-## Page config - MUST be first Streamlit command
-from modules.styles import apply_page_styling, create_metric_card, create_medical_divider
+from modules.styles import apply_page_styling, create_medical_divider
 
 ## Apply medical theme and styling
 apply_page_styling()
@@ -21,9 +18,9 @@ SideBarLinks()
 # Medical-themed header
 st.markdown("""
 <div style="text-align: center; margin-bottom: 2rem;">
-    <h1 style="margin-bottom: 0.5rem;">📥 Inbox & Alerts</h1>
+    <h1 style="margin-bottom: 0.5rem;">📬 Proxy Messages & Communications</h1>
     <p style="font-size: 1.2rem; color: var(--gray-600); margin: 0;">
-        View messages and alerts for your dependent patients
+        View and manage messages for your dependent patient
     </p>
 </div>
 """, unsafe_allow_html=True)
@@ -68,6 +65,16 @@ def get_nurses():
     """Get all nurses for recipient selection"""
     try:
         response = requests.get(f"{API_BASE_URL}/nurse/")
+        if response.status_code == 200:
+            return response.json()
+        return []
+    except:
+        return []
+
+def get_patients():
+    """Get all patients for recipient selection"""
+    try:
+        response = requests.get(f"{API_BASE_URL}/patient/")
         if response.status_code == 200:
             return response.json()
         return []
@@ -119,19 +126,51 @@ def create_message(subject, content, recipient_type, recipient_id, priority, sen
     except Exception as e:
         return False
 
-def get_messages(proxy_id):
-    """Get messages for specific proxy"""
+def delete_message(message_id):
+    """Delete a message (acknowledge it)"""
     try:
-        response = requests.get(f"{API_BASE_URL}/message/?user_type=proxy&user_id={proxy_id}")
+        response = requests.delete(f"{API_BASE_URL}/message/messages/{message_id}")
         if response.status_code == 200:
-            return response.json()
-        return []
+            # Store success message in session state
+            st.session_state['delete_success'] = f"Message {message_id} acknowledged and deleted!"
+            return True
+        elif response.status_code == 404:
+            st.info("No data found for this message")
+            return False
+        else:
+            st.error(f"Failed to delete message: {response.status_code}")
+            return False
+    except:
+        st.error("Connection error - please try again")
+        return False
+
+def get_messages(proxy_id):
+    """Get messages for specific proxy (via their associated patient)"""
+    try:
+        # First get the proxy's associated patient ID
+        proxy_response = requests.get(f"{API_BASE_URL}/proxy/{proxy_id}")
+        if proxy_response.status_code == 200:
+            proxy_data = proxy_response.json()
+            patient_id = proxy_data.get('PatientID')
+            
+            if patient_id:
+                # Get messages for the associated patient
+                response = requests.get(f"{API_BASE_URL}/message/?user_type=patient&user_id={patient_id}")
+                if response.status_code == 200:
+                    return response.json()
+        
+        # Fallback to dummy data if anything fails
+        return [
+            {"MessageID": 1, "Subject": "Appointment Confirmation", "Content": "Your appointment has been confirmed for tomorrow at 2:00 PM", "Priority": "Normal", "SentTime": "2024-01-20 10:00:00", "SenderType": "Dr. Smith", "PostedBy": 1, "ReadStatus": False},
+            {"MessageID": 2, "Subject": "Insurance Update", "Content": "Your insurance information has been updated in our system", "Priority": "Normal", "SentTime": "2024-01-19 14:30:00", "SenderType": "Billing Department", "PostedBy": 2, "ReadStatus": True},
+            {"MessageID": 3, "Subject": "Care Plan Review", "Content": "It's time to review and update your care plan", "Priority": "High", "SentTime": "2024-01-18 09:15:00", "SenderType": "Care Team", "PostedBy": 3, "ReadStatus": False}
+        ]
     except:
         st.warning("Could not connect to messages API, using dummy data.")
         return [
-            {"MessageID": 1, "Subject": "Appointment Confirmation", "Content": "Your appointment has been confirmed for tomorrow at 2:00 PM", "Priority": "Normal", "From": "Dr. Smith", "Date": "2024-01-20", "Read": False},
-            {"MessageID": 2, "Subject": "Insurance Update", "Content": "Your insurance information has been updated in our system", "Priority": "Normal", "From": "Billing Department", "Date": "2024-01-19", "Read": True},
-            {"MessageID": 3, "Subject": "Care Plan Review", "Content": "It's time to review and update your care plan", "Priority": "High", "From": "Care Team", "Date": "2024-01-18", "Read": False}
+            {"MessageID": 1, "Subject": "Appointment Confirmation", "Content": "Your appointment has been confirmed for tomorrow at 2:00 PM", "Priority": "Normal", "SentTime": "2024-01-20 10:00:00", "SenderType": "Dr. Smith", "PostedBy": 1, "ReadStatus": False},
+            {"MessageID": 2, "Subject": "Insurance Update", "Content": "Your insurance information has been updated in our system", "Priority": "Normal", "SentTime": "2024-01-19 14:30:00", "SenderType": "Billing Department", "PostedBy": 2, "ReadStatus": True},
+            {"MessageID": 3, "Subject": "Care Plan Review", "Content": "It's time to review and update your care plan", "Priority": "High", "SentTime": "2024-01-18 09:15:00", "SenderType": "Care Team", "PostedBy": 3, "ReadStatus": False}
         ]
 
 ## Get proxy information
@@ -140,65 +179,36 @@ proxy_info = get_proxy_by_name("Nina", "Pesci")
 if proxy_info:
     proxy_id = proxy_info.get('ProxyID', 1)
     proxy_name = f"{proxy_info.get('FirstName', 'Nina')} {proxy_info.get('LastName', 'Pesci')}"
+    relationship = proxy_info.get('Relationship', 'Unknown')
 else:
     # Fallback to first proxy if name lookup fails
     proxies = get_proxies()
     if proxies:
         current_proxy = proxies[0]
         proxy_id = current_proxy.get('ProxyID', 1)
-        proxy_name = f"{current_proxy.get('FirstName', 'Nina')} {current_proxy.get('LastName', 'Pesci')}"
+        proxy_name = f"{current_proxy.get('FirstName', 'Nina')} {current_proxy.get('LastName', 'Nina')}"
+        relationship = current_proxy.get('Relationship', 'Unknown')
     else:
         proxy_id = 1
         proxy_name = "Nina Pesci"
+        relationship = "Unknown"
 
 ## Welcome message
-st.markdown(f"### Welcome, {proxy_name}")
+st.markdown(f"### Welcome, {proxy_name} ({relationship})")
 
 st.markdown("---")
 
-## Inbox Overview
-st.markdown("## 📊 Inbox Overview")
-
+## Get messages for current proxy's patient
 messages = get_messages(proxy_id)
 
-# Summary metrics
-col1, col2, col3 = st.columns(3)
-
-with col1:
-    total_messages = len(messages)
-    st.metric("Total Messages", total_messages)
-
-with col2:
-    unread_messages = len([m for m in messages if not m.get('Read', False)])
-    st.metric("Unread Messages", unread_messages)
-
-with col3:
-    high_priority = len([m for m in messages if m.get('Priority') == 'High'])
-    st.metric("High Priority", high_priority)
-
-st.markdown("---")
-
-## Messages Section
-st.markdown("## 📧 Messages")
-
-if messages:
-    # Display messages
-    for message in messages:
-        with st.expander(f"📧 {message.get('Subject', 'No Subject')} - {message.get('Date', 'N/A')}"):
-            st.markdown(f"**From:** {message.get('From', 'Unknown')}")
-            st.markdown(f"**Content:** {message.get('Content', 'No content')}")
-            st.markdown(f"**Read:** {'Yes' if message.get('Read') else 'No'}")
-            st.markdown(f"**Priority:** {message.get('Priority', 'Normal')}")
-else:
-    st.info("No messages in your inbox.")
-
-st.markdown("---")
-
-## Compose Message Section
-st.markdown("## ✉️ Compose Message")
+# Display success message if exists
+if 'delete_success' in st.session_state:
+    st.success(st.session_state['delete_success'])
+    # Clear the message after displaying
+    del st.session_state['delete_success']
 
 # Create two columns for inbox and compose
-col1, col2 = st.columns([2, 1])
+col1, col2 = st.columns([1.5, 1])  # Give compose section more space
 
 with col1:
     st.markdown("### 📥 Inbox")
@@ -208,11 +218,22 @@ with col1:
     else:
         # Display messages
         for message in messages:
-            with st.expander(f"📧 {message.get('Subject', 'No Subject')} - {message.get('Date', 'N/A')}"):
-                st.markdown(f"**From:** {message.get('From', 'Unknown')}")
+            with st.expander(f"📧 {message.get('Subject', 'No Subject')} - {message.get('SentTime', 'N/A')}"):
+                st.markdown(f"**From:** {message.get('SenderType', 'Unknown')} {message.get('PostedBy', 'N/A')}")
                 st.markdown(f"**Content:** {message.get('Content', 'No content')}")
-                st.markdown(f"**Read:** {'Yes' if message.get('Read') else 'No'}")
+                st.markdown(f"**Read:** {'Yes' if message.get('ReadStatus') else 'No'}")
                 st.markdown(f"**Priority:** {message.get('Priority', 'Normal')}")
+                
+                # Add acknowledge/delete button
+                col1_inner, col2_inner = st.columns([3, 1])
+                with col1_inner:
+                    st.markdown(f"**Message ID:** {message.get('MessageID', 'N/A')}")
+                with col2_inner:
+                    if st.button("✅ Acknowledge", key=f"ack_{message.get('MessageID')}", use_container_width=True):
+                        if delete_message(message.get('MessageID')):
+                            st.rerun()
+                        else:
+                            st.error("Failed to delete message")
 
 with col2:
     st.markdown("### ✉️ Compose Message")
@@ -221,7 +242,7 @@ with col2:
     if 'recipient_type' not in st.session_state:
         st.session_state.recipient_type = "doctor"
     
-    recipient_type = st.selectbox("Send to:", ["doctor", "nurse"], key="recipient_type_selector")
+    recipient_type = st.selectbox("Send to:", ["doctor", "nurse", "patient"], key="recipient_type_selector")
     
     # Update session state when selection changes
     if st.session_state.recipient_type != recipient_type:
@@ -250,11 +271,21 @@ with col2:
         else:
             st.warning("No nurses available")
             recipient_id = None
+            
+    elif st.session_state.recipient_type == "patient":
+        patients = get_patients()
+        if patients:
+            recipient_options = {f"{p.get('FirstName', '')} {p.get('LastName', '')} (ID: {p.get('PatientID', '')})": p.get('PatientID') for p in patients}
+            recipient = st.selectbox("Select Patient:", list(recipient_options.keys()), key="patient_selector")
+            recipient_id = recipient_options[recipient] if recipient else None
+        else:
+            st.warning("No patients available")
+            recipient_id = None
     
     # Message composition form
     with st.form("compose_message"):
         subject = st.text_input("Subject", placeholder="Enter message subject...", key="subject_input")
-        content = st.text_area("Message", placeholder="Type your message here...", height=150, key="content_input")
+        content = st.text_area("Message", placeholder="Type your message here...", height=120, key="content_input")
         
         # Priority selection
         priority = st.selectbox("Priority:", ["Normal", "High", "Urgent"], key="priority_input")

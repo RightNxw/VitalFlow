@@ -189,3 +189,32 @@ def get_message(message_id):
         return jsonify(message), 200
     except Error as e:
         return jsonify({"error": str(e)}), 500
+
+# Delete a specific message (when acknowledged)
+# Available to Doctor-1.6, Nurse-2.7, Patient-3.7, Proxy-4.6
+@messages.route("/messages/<int:message_id>", methods=["DELETE"])
+def delete_message(message_id):
+    try:
+        cursor = db.get_db().cursor()
+        
+        # Check if message exists
+        cursor.execute("SELECT * FROM MessageDetails WHERE MessageID = %s", (message_id,))
+        if not cursor.fetchone():
+            return jsonify({"error": "Message not found"}), 404
+        
+        # Delete message links first (due to foreign key constraints)
+        cursor.execute("DELETE FROM MessageDoctor WHERE MessageID = %s", (message_id,))
+        cursor.execute("DELETE FROM MessageNurse WHERE MessageID = %s", (message_id,))
+        cursor.execute("DELETE FROM MessagePatients WHERE MessageID = %s", (message_id,))
+        
+        # Delete the message itself
+        cursor.execute("DELETE FROM MessageDetails WHERE MessageID = %s", (message_id,))
+        
+        db.get_db().commit()
+        cursor.close()
+        
+        current_app.logger.info(f'Message {message_id} deleted successfully')
+        return jsonify({"message": "Message deleted successfully"}), 200
+    except Error as e:
+        current_app.logger.error(f'Database error in delete_message: {str(e)}')
+        return jsonify({"error": str(e)}), 500

@@ -70,6 +70,24 @@ def post_alert(payload: dict):
         st.error(f"Create alert failed at {API_BASE}. Details: {ex}")
         return None
 
+def delete_alert(alert_id: int):
+    """Delete an alert (acknowledge it)"""
+    try:
+        r = requests.delete(f"{API_BASE}/alert/{alert_id}", timeout=10)
+        if r.status_code == 200:
+            # Store success message in session state
+            st.session_state['delete_success'] = f"Alert {alert_id} acknowledged and deleted!"
+            return True
+        elif r.status_code == 404:
+            st.info("No data found for this alert")
+            return False
+        else:
+            st.error(f"DELETE /alert/{alert_id} → {r.status_code}")
+            return False
+    except requests.exceptions.RequestException as ex:
+        st.error(f"Delete alert failed at {API_BASE}. Details: {ex}")
+        return False
+
 def get_patients():
     try:
         r = requests.get(f"{API_BASE}/patient/", timeout=10)
@@ -82,6 +100,12 @@ def get_patients():
         return []
 
 SideBarLinks()
+
+# Display success message if exists
+if 'delete_success' in st.session_state:
+    st.success(st.session_state['delete_success'])
+    # Clear the message after displaying
+    del st.session_state['delete_success']
 
 # Medical-themed header
 st.markdown("""
@@ -159,10 +183,10 @@ with lc:
             st.session_state["selected_alert_id"] = int(sel_id)
     with cc2:
         if st.button("Acknowledge Selected", type="primary", disabled=(int(sel_id) <= 0)):
-            ok = put_alert_ack(int(sel_id), DEFAULT_NURSE_ID)
-            if ok:
-                st.success("Acknowledged")
+            if delete_alert(int(sel_id)):
                 st.rerun()
+            else:
+                st.error("Failed to delete alert")
 
 with rc:
     st.markdown("""
