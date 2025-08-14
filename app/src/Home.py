@@ -78,14 +78,6 @@ if st.button("Act as Joe, a Patient",
     logger.info("Logging in as Patient Persona")
     st.switch_page('pages/50_Patient_Home.py')
 
-if st.button('Act as Nic Nevin, a Nurse', ## Updated to Nurse
-
-            type = 'primary', 
-            use_container_width=True):
-    st.session_state['authenticated'] = True
-    st.session_state['role'] = 'usaid_worker'
-    st.session_state['first_name'] = 'Nic'
-    st.switch_page('pages/nurse_home.py')
 
 if st.button('Act as Nina Pesci, a Proxy',  ## Updated to Proxy
             type = 'primary', 
