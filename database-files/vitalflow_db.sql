@@ -670,7 +670,7 @@ INSERT INTO `Condition` (Description, Treatment) VALUES
 ('Irregular sleep-wake rhythm', 'Sleep scheduling, light therapy'),
 ('Non-24-hour sleep-wake disorder', 'Melatonin, light therapy'),
 ('Kleine-Levin syndrome', 'Supportive care, medications if severe'),
-('Idiopathic hypersomnia', 'Stimulants, lifestyle modifications'),
+('Idiopathic hypersomnia', 'Stimulants, lifestyle modifications');
 
 INSERT INTO Discharge (DischargeDate, Instructions) VALUES
 ('2024-01-15', 'Continue healthy lifestyle. Schedule next annual exam.'),
