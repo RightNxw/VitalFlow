@@ -5,7 +5,6 @@ import logging
 from logging.handlers import RotatingFileHandler
 
 from backend.db_connection import db
-from backend.simple.simple_routes import simple_routes
 from backend.patient.patient_routes import patients
 from backend.visit.visit_routes import visits
 from backend.vital.vital_routes import vitals
@@ -56,7 +55,6 @@ def create_app():
     # Register the routes from each Blueprint with the app object
     # and give a url prefix to each
     app.logger.info("create_app(): registering blueprints with Flask app object.")
-    app.register_blueprint(simple_routes)
     
     # Register VitalFlow healthcare system blueprints
     app.register_blueprint(patients, url_prefix="/patient")
