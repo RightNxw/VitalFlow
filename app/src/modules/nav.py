@@ -67,8 +67,13 @@ def AdminPageNav():
     )
 
 #### ------------------------ Nurse Role ------------------------
-def NurseDashboardNav():
-    st.sidebar.page_link("pages/xx_Nurse_Dashboard.py", label="Dashboard", icon="👩‍⚕️")
+def NurseHomeNav():
+    # Nurse portal navigation
+    st.sidebar.page_link("pages/xx_Nurse_Dashboard.py", label="Home", icon="🏠")
+    st.sidebar.page_link("pages/xx_Nurse_Patients.py", label="Patients", icon="👥")
+    st.sidebar.page_link("pages/xx_Nurse_Treatments.py", label="Treatments", icon="💊")
+    st.sidebar.page_link("pages/xx_Nurse_Alerts.py", label="Alerts", icon="⚠️")
+    st.sidebar.page_link("pages/nurse_messages.py", label="Inbox", icon="📥")
 
 
 def NursePatientsNav():
@@ -109,13 +114,6 @@ def SideBarLinks(show_home=False):
     ## Show the other page navigators depending on the users' role.
     if st.session_state["authenticated"]:
 
-        if st.session_state["role"] == "nurse":
-            NurseDashboardNav()
-            NursePatientsNav()
-            NurseTreatmentsNav()
-            NurseAlertsNav()
-            NurseInboxNav()
-
         # Show World Bank Link and Map Demo Link if the user is a political strategy advisor role.
         if st.session_state["role"] == "pol_strat_advisor":
             PolStratAdvHomeNav()
@@ -131,6 +129,10 @@ def SideBarLinks(show_home=False):
         ## Show proxy portal navigation if the user is a proxy role.
         if st.session_state["role"] == "proxy":
             ProxyHomeNav()
+
+        ## Show nurse portal navigation if the user is a nurse role.
+        if st.session_state["role"] == "nurse":
+            NurseHomeNav()
  
     ## Always show the About page at the bottom of the list of links
     AboutPageNav()
