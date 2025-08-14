@@ -83,6 +83,7 @@ SideBarLinks()
 
 st.title("Nurse Dashboard")
 
+# Load data
 alerts = get_alerts(DEFAULT_NURSE_ID)
 patients = get_patients()
 
@@ -121,13 +122,13 @@ with lc:
         view = view[view["UrgencyLevel"] == int(urg)]
     show_cols = [c for c in ["AlertID", "UrgencyLevel", "Message", "Protocol", "PostedBy", "SentTime"] if c in view.columns]
     st.dataframe(view[show_cols] if not view.empty else pd.DataFrame(columns=["AlertID","UrgencyLevel","Message","Protocol","PostedBy","SentTime"]), use_container_width=True, hide_index=True)
-    sel_id = st.number_input("Select AlertID to view/ack", min_value=0, step=1, value=int(view["AlertID"].iloc[0]) if not view.empty and "AlertID" in view.columns else 0)
+    sel_id = st.text_input("Select AlertID to view/ack", value=str(int(view["AlertID"].iloc[0])) if not view.empty and "AlertID" in view.columns else "0")
     cc1, cc2 = st.columns(2)
     with cc1:
-        if st.button("View Selected", disabled=(sel_id <= 0)):
+        if st.button("View Selected", disabled=(int(sel_id) <= 0)):
             st.session_state["selected_alert_id"] = int(sel_id)
     with cc2:
-        if st.button("Acknowledge Selected", type="primary", disabled=(sel_id <= 0)):
+        if st.button("Acknowledge Selected", type="primary", disabled=(int(sel_id) <= 0)):
             ok = put_alert_ack(int(sel_id), DEFAULT_NURSE_ID)
             if ok:
                 st.success("Acknowledged")
@@ -139,8 +140,7 @@ with rc:
         msg = st.text_area("Message", "")
         urg_val = st.slider("UrgencyLevel", 1, 5, 3)
         proto = st.text_area("Protocol", "")
-        posted_by_id = st.number_input("PostedBy (NurseID)", min_value=1, step=1, value=int(DEFAULT_NURSE_ID))
-        posted_role = st.text_input("PostedByRole", "Nurse")
+        posted_by_id = st.text_input("PostedBy (NurseID)", value=str(DEFAULT_NURSE_ID))
         submit = st.form_submit_button("Create")
         if submit:
             if not msg.strip():
@@ -151,7 +151,7 @@ with rc:
                     "Message": msg.strip(),
                     "SentTime": now_str,
                     "PostedBy": int(posted_by_id),
-                    "PostedByRole": posted_role.strip() or "Nurse",
+                    "PostedByRole": "Nurse",  # Hardcoded since we know it's a nurse
                     "UrgencyLevel": int(urg_val),
                     "Protocol": proto.strip()
                 })
