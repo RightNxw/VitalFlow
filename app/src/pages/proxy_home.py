@@ -10,86 +10,25 @@ from streamlit_extras.app_logo import add_logo
 from modules.nav import SideBarLinks
 
 ## Page config - MUST be first Streamlit command
-st.set_page_config(
-    page_title="Proxy Home",
-    page_icon="👥",
-    layout="wide",
-    initial_sidebar_state="expanded",
-)
+from modules.styles import apply_page_styling, create_metric_card, create_patient_card, create_medical_divider
+
+apply_page_styling()
 
 ## Add logo and navigation
 SideBarLinks()
 
-st.write("# Proxy Home")
-st.write("Manage patient information and billing for your dependents.")
+# Medical-themed header with icon
+st.markdown("""
+<div style="text-align: center; margin-bottom: 2rem;">
+    <h1 style="margin-bottom: 0.5rem;">🏥 Proxy Home</h1>
+    <p style="font-size: 1.2rem; color: var(--gray-600); margin: 0;">
+        Manage patient information and billing for your dependents
+    </p>
+</div>
+""", unsafe_allow_html=True)
 
 # API configuration
 API_BASE_URL = "http://web-api:4000"
-
-# Custom CSS
-st.markdown(
-    """
-    <style>
-      #MainMenu {visibility: hidden;}
-      footer {visibility: hidden;}
-      [data-testid="stSidebar"] {width: 260px;}
-      [data-baseweb="radio"] > div {row-gap: .35rem;}
-
-      .patient-card {
-        border: 2px solid #ddd;
-        border-radius: 8px;
-        padding: 16px;
-        margin: 12px 0;
-        display: flex;
-        align-items: center;
-        background: white;
-      }
-
-      .patient-avatar {
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        border: 2px solid #333;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-right: 20px;
-        font-size: 24px;
-        background: #f8f9fa;
-      }
-
-      .patient-info {
-        flex-grow: 1;
-        line-height: 1.6;
-      }
-
-      .patient-field {
-        margin: 4px 0;
-        font-weight: 500;
-      }
-
-      .metric-card {
-        background: white;
-        padding: 20px;
-        border-radius: 8px;
-        border: 1px solid #e0e0e0;
-        text-align: center;
-      }
-
-      .metric-value {
-        font-size: 2rem;
-        font-weight: bold;
-        color: #0068c9;
-      }
-
-      .metric-label {
-        color: #666;
-        margin-top: 8px;
-      }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
 
 ## API functions with proper error handling
 def get_proxies():
@@ -177,16 +116,7 @@ def get_insurance_info(patient_id):
         st.warning("Could not connect to insurance API, using dummy data.")
         return [{"InsuranceProvider": "Blue Cross", "PolicyNumber": "BC123456", "Deductible": 1000.00}]
 
-def get_alerts(proxy_id):
-    """Get alerts for specific proxy"""
-    try:
-        response = requests.get(f"{API_BASE_URL}/alert/?user_type=proxy&user_id={proxy_id}")
-        if response.status_code == 200:
-            return response.json()
-        return []
-    except:
-        st.warning("Could not connect to alerts API, using dummy data.")
-        return [{"AlertID": 1, "Title": "Medication Refill", "Description": "Patient needs medication refill", "Severity": "Medium"}]
+
 
 def get_messages(proxy_id):
     """Get messages for specific proxy"""
@@ -210,9 +140,28 @@ else:
 ## Welcome message
 if proxies:
     proxy_name = f"{proxies[0].get('FirstName', 'Nina')} {proxies[0].get('LastName', 'Pesci')}"
-    st.markdown(f"### Welcome, {proxy_name}")
+    # Get patient count for display
+    proxy_id = st.session_state.get('current_proxy_id', 1)
+    dependent_patients = get_proxy_patients(proxy_id)
+    patient_count = len(dependent_patients) if dependent_patients else 0
+    
+    st.markdown(f"""
+    <div class="medical-card" style="text-align: center; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);">
+        <h2 style="margin: 0 0 1rem 0; color: var(--primary-blue);">👋 Welcome, {proxy_name}</h2>
+        <p style="margin: 0; color: var(--gray-600); font-size: 1.1rem;">
+            You're managing <strong>{patient_count}</strong> dependent patients
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
 else:
-    st.markdown("### Welcome, Nina Pesci")
+    st.markdown("""
+    <div class="medical-card" style="text-align: center; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);">
+        <h2 style="margin: 0 0 1rem 0; color: var(--primary-blue);">👋 Welcome, Nina Pesci</h2>
+        <p style="margin: 0; color: var(--gray-600); font-size: 1.1rem;">
+            You're managing dependent patients
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
 
 ## Patient card renderer
 def render_patient_card(patient_data):
@@ -239,12 +188,37 @@ def render_patient_card(patient_data):
     last_name = patient.get('LastName', '')
     initials = f"{first_name[0] if first_name else 'P'}{last_name[0] if last_name else 'T'}"
 
+    # Get additional patient info for enhanced display
+    dob = patient.get('DOB', 'N/A')
+    blood_type = patient.get('BloodType', 'N/A')
+    
+    # Format DOB if available
+    if dob and dob != 'N/A':
+        try:
+            dob_formatted = datetime.strptime(dob, '%Y-%m-%d').strftime('%m/%d/%Y')
+        except:
+            dob_formatted = dob
+    else:
+        dob_formatted = 'N/A'
+
     card_html = f"""
     <div class="patient-card">
         <div class="patient-avatar">{initials}</div>
         <div class="patient-info">
-            <div class="patient-field">Patient Name: <strong>{patient.get('FirstName', 'N/A')} {patient.get('LastName', 'N/A')}</strong></div>
-            <div class="patient-field">Admit Date: <strong>{admit_date}</strong></div>
+            <div class="patient-field">
+                <strong style="font-size: 1.1rem; color: var(--primary-blue);">
+                    {patient.get('FirstName', 'N/A')} {patient.get('LastName', 'N/A')}
+                </strong>
+            </div>
+            <div class="patient-field">
+                📅 Admit Date: <strong>{admit_date}</strong>
+            </div>
+            <div class="patient-field">
+                🎂 DOB: <strong>{dob_formatted}</strong>
+            </div>
+            <div class="patient-field">
+                🩸 Blood Type: <strong>{blood_type}</strong>
+            </div>
         </div>
     </div>
     """
@@ -252,23 +226,21 @@ def render_patient_card(patient_data):
     st.markdown(card_html, unsafe_allow_html=True)
 
 ## Dashboard Overview
-st.markdown("### Dashboard Overview")
+st.markdown("""
+<div style="text-align: center; margin: 2rem 0;">
+    <h2 style="margin-bottom: 0.5rem;">📊 Dashboard Overview</h2>
+    <p style="color: var(--gray-600); margin: 0;">Monitor your dependent patients and key metrics</p>
+</div>
+""", unsafe_allow_html=True)
 
 ## Dashboard metrics
-col1, col2, col3, col4 = st.columns(4)
+col1, col2, col3 = st.columns(3)
 
 with col1:
     proxy_id = st.session_state.get('current_proxy_id', 1)
     dependent_patients = get_proxy_patients(proxy_id)
-    st.markdown(
-        f"""
-        <div class="metric-card">
-            <div class="metric-value">{len(dependent_patients) if dependent_patients else 0}</div>
-            <div class="metric-label">Dependent Patients</div>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+    patient_count = len(dependent_patients) if dependent_patients else 0
+    st.markdown(create_metric_card(patient_count, "Dependent Patients", "👥", "primary"), unsafe_allow_html=True)
 
 with col2:
     insurance_count = 0
@@ -277,46 +249,35 @@ with col2:
             insurance_info = get_insurance_info(patient.get('PatientID'))
             insurance_count += len(insurance_info) if insurance_info else 0
     
-    st.markdown(
-        f"""
-        <div class="metric-card">
-            <div class="metric-value">{insurance_count}</div>
-            <div class="metric-label">Insurance Policies</div>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+    st.markdown(create_metric_card(insurance_count, "Insurance Policies", "🛡️", "success"), unsafe_allow_html=True)
 
 with col3:
-    alerts = get_alerts(proxy_id)
-    st.markdown(
-        f"""
-        <div class="metric-card">
-            <div class="metric-value">{len(alerts) if alerts else 0}</div>
-            <div class="metric-label">Active Alerts</div>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-with col4:
     messages = get_messages(proxy_id)
-    st.markdown(
-        f"""
-        <div class="metric-card">
-            <div class="metric-value">{len(messages) if messages else 0}</div>
-            <div class="metric-label">Unread Messages</div>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+    message_count = len(messages) if messages else 0
+    st.markdown(create_metric_card(message_count, "Unread Messages", "📬", "danger"), unsafe_allow_html=True)
 
-st.markdown("---")
+# Add medical divider
+st.markdown(create_medical_divider(), unsafe_allow_html=True)
 
 # Patient search and list
-patient_search = st.text_input("Patient Search", placeholder="Search patients by name...", label_visibility="visible")
+st.markdown("""
+<div style="margin: 2rem 0;">
+    <h3 style="margin-bottom: 1rem;">🔍 Patient Search</h3>
+</div>
+""", unsafe_allow_html=True)
 
-st.markdown("### Dependent Patients")
+patient_search = st.text_input(
+    "Patient Search", 
+    placeholder="Search patients by name...", 
+    label_visibility="visible",
+    help="Enter patient name to filter the list"
+)
+
+st.markdown("""
+<div style="margin: 2rem 0;">
+    <h3 style="margin-bottom: 1rem;">👥 Dependent Patients</h3>
+</div>
+""", unsafe_allow_html=True)
 
 if patient_search:
     # Search patients by their names
@@ -328,9 +289,17 @@ if patient_search:
                 filtered_patients.append(patient)
 
     if filtered_patients:
-        st.info(f"Found {len(filtered_patients)} patients matching '{patient_search}'")
+        st.markdown(f"""
+        <div class="alert-card success">
+            <strong>✅ Found {len(filtered_patients)} patients matching '{patient_search}'</strong>
+        </div>
+        """, unsafe_allow_html=True)
     else:
-        st.warning(f"No patients found matching '{patient_search}'")
+        st.markdown(f"""
+        <div class="alert-card warning">
+            <strong>⚠️ No patients found matching '{patient_search}'</strong>
+        </div>
+        """, unsafe_allow_html=True)
         filtered_patients = dependent_patients[:4]  # Show default list
 else:
     filtered_patients = dependent_patients[:4] if dependent_patients else []
@@ -341,5 +310,10 @@ if filtered_patients:
         patient_details = get_patient_details(patient.get('PatientID'))
         render_patient_card(patient_details)
 else:
-    st.info("No dependent patient data available.")
+    st.markdown("""
+    <div class="medical-card" style="text-align: center; background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);">
+        <h4 style="color: var(--gray-700); margin-bottom: 0.5rem;">📋 No Patient Data</h4>
+        <p style="color: var(--gray-600); margin: 0;">No dependent patient data available at this time.</p>
+    </div>
+    """, unsafe_allow_html=True)
 

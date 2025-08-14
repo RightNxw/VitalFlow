@@ -9,19 +9,29 @@ import requests
 from datetime import datetime
 from streamlit_extras.app_logo import add_logo
 from modules.nav import SideBarLinks
- 
+from modules.styles import apply_page_styling, create_medical_divider
+
+## Apply medical theme and styling
+apply_page_styling()
+
 # Add logo and navigation
 SideBarLinks()
- 
+
 # Page config
 
- 
-st.write("# Messages & Communications")
-st.write("View and manage your messages.")
- 
+# Medical-themed header
+st.markdown("""
+<div style="text-align: center; margin-bottom: 2rem;">
+    <h1 style="margin-bottom: 0.5rem;">📥 Messages & Communications</h1>
+    <p style="font-size: 1.2rem; color: var(--gray-600); margin: 0;">
+        View and manage your messages
+    </p>
+</div>
+""", unsafe_allow_html=True)
+
 # API configuration
 API_BASE_URL = "http://web-api:4000"
- 
+
 # API functions
 def get_messages(doctor_id):
     """Get messages for specific doctor"""

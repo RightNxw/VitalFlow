@@ -9,12 +9,10 @@ from streamlit_extras.app_logo import add_logo
 from modules.nav import SideBarLinks
 
 ## Page config - MUST be first Streamlit command
-st.set_page_config(
-    page_title="Patient Home",
-    page_icon="🏠",
-    layout="wide",
-    initial_sidebar_state="expanded",
-)
+from modules.styles import apply_page_styling, create_metric_card, create_medical_divider
+
+## Apply medical theme and styling
+apply_page_styling()
 
 ## Add logo and navigation
 SideBarLinks()
@@ -344,7 +342,15 @@ def main():
 
 def show_patient_home():
     """Show the main patient home page"""
-    st.markdown("<h1 style='text-align: center;'>Patient Portal</h1>", unsafe_allow_html=True)
+    # Medical-themed header
+    st.markdown("""
+    <div style="text-align: center; margin-bottom: 2rem;">
+        <h1 style="margin-bottom: 0.5rem;">👤 Patient Portal</h1>
+        <p style="font-size: 1.2rem; color: var(--gray-600); margin: 0;">
+            Access your health information and manage appointments
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
     
     # Get current patient ID from session state (assuming patient is logged in)
     patient_id = st.session_state.get('current_patient_id', 1)  # Default to patient ID 1 for demo
@@ -359,43 +365,78 @@ def show_patient_home():
     patient_name = f"{patient_info.get('FirstName', 'Unknown')} {patient_info.get('LastName', 'Unknown')}"
     patient_dob = patient_info.get('DOB', 'Unknown')
     
-    # Patient Profile section
-    st.markdown("---")
-    st.markdown(f"**{patient_name}**")
-    st.markdown(f"**Patient DOB:** {patient_dob}")
+    # Patient Profile section with beautiful styling
+    st.markdown("""
+    <div class="medical-card" style="text-align: center; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);">
+        <h2 style="margin: 0 0 1rem 0; color: var(--primary-blue);">👤 Patient Profile</h2>
+        <p style="margin: 0 0 0.5rem 0; font-size: 1.3rem; font-weight: 600; color: var(--gray-800);">{patient_name}</p>
+        <p style="margin: 0; color: var(--gray-600);">Date of Birth: {patient_dob}</p>
+    </div>
+    """.format(patient_name=patient_name, patient_dob=patient_dob), unsafe_allow_html=True)
 
-    # Bottom section: Visits
-    st.markdown("---")
-    st.markdown("### **VISITS**")
+    # Add medical divider
+    st.markdown(create_medical_divider(), unsafe_allow_html=True)
+    
+    # Visits section with beautiful styling
+    st.markdown("""
+    <div style="margin: 2rem 0;">
+        <h2 style="color: var(--primary-blue); margin-bottom: 1rem;">📅 Visit Information</h2>
+        <p style="color: var(--gray-600); margin: 0;">Manage your appointments and visit details</p>
+    </div>
+    """, unsafe_allow_html=True)
     
     # Get current visit from database
     current_visit = get_patient_visit(patient_id)
     
     if current_visit:
-        # Display current visit info from database
-        st.info("**Current Visit Information:**")
-        st.markdown(f"**Patient Admit Date:** {current_visit.get('AppointmentDate', 'N/A')}")
-        st.markdown(f"**Admit Reason:** {current_visit.get('AdmitReason', 'N/A')}")
-        if current_visit.get('NextVisitDate'):
-            st.markdown(f"**Next Visit:** {current_visit.get('NextVisitDate', 'N/A')}")
+        # Display current visit info from database with beautiful styling
+        st.markdown("""
+        <div class="medical-card" style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);">
+            <h3 style="margin: 0 0 1rem 0; color: var(--accent-green);">✅ Current Visit Information</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div>
+                    <p style="margin: 0.5rem 0;"><strong>Appointment Date:</strong> {appointment_date}</p>
+                    <p style="margin: 0.5rem 0;"><strong>Admit Reason:</strong> {admit_reason}</p>
+                </div>
+                <div>
+                    <p style="margin: 0.5rem 0;"><strong>Next Visit:</strong> {next_visit}</p>
+                </div>
+            </div>
+        </div>
+        """.format(
+            appointment_date=current_visit.get('AppointmentDate', 'N/A'),
+            admit_reason=current_visit.get('AdmitReason', 'N/A'),
+            next_visit=current_visit.get('NextVisitDate', 'N/A')
+        ), unsafe_allow_html=True)
     else:
-        st.info("No current visit found")
+        st.markdown("""
+        <div class="medical-card" style="text-align: center; background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);">
+            <h4 style="color: var(--gray-700); margin-bottom: 0.5rem;">📋 No Current Visit</h4>
+            <p style="color: var(--gray-600); margin: 0;">No active visit found. Schedule a new appointment below.</p>
+        </div>
+        """, unsafe_allow_html=True)
 
-    # Form to create new visit
-    st.markdown("**Schedule New Visit:**")
+    # Form to create new visit with beautiful styling
+    st.markdown("""
+    <div style="margin: 2rem 0;">
+        <h3 style="color: var(--secondary-teal); margin-bottom: 1rem;">📝 Schedule New Visit</h3>
+        <p style="color: var(--gray-600); margin: 0;">Book your next appointment</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
     with st.form("new_visit_form"):
         admit_reason = st.text_input("Admit Reason", placeholder="Enter reason for visit...")
         appointment_date = st.date_input("Appointment Date", value=datetime.now().date())
         
-        if st.form_submit_button("Schedule Visit"):
+        if st.form_submit_button("📅 Schedule Visit", type="primary", use_container_width=True):
             if admit_reason and appointment_date:
                 if create_new_visit(patient_id, admit_reason, appointment_date):
-                    st.success("Visit scheduled successfully!")
+                    st.success("✅ Visit scheduled successfully!")
                     st.rerun()
                 else:
-                    st.error("Failed to schedule visit")
+                    st.error("❌ Failed to schedule visit")
             else:
-                st.error("Please fill in all fields")
+                st.error("⚠️ Please fill in all fields")
 
 def show_patient_billing():
     """Show patient billing and insurance information"""
@@ -409,14 +450,27 @@ def show_patient_billing():
     
     patient_name = f"{patient_info.get('FirstName', 'Unknown')} {patient_info.get('LastName', 'Unknown')}"
     
-    # Header with back button
-    col1, col2 = st.columns([4, 1])
-    with col1:
-        st.markdown(f"## 💰 Billing & Insurance: {patient_name}")
-    with col2:
-        if st.button("← Back to Home"):
-            st.session_state.current_view = "home"
-            st.rerun()
+    # Header with back button and beautiful styling
+    st.markdown("""
+    <div style="text-align: center; margin-bottom: 2rem;">
+        <h1 style="margin-bottom: 0.5rem;">💰 Billing & Insurance</h1>
+        <p style="font-size: 1.2rem; color: var(--gray-600); margin: 0;">
+            Manage your billing and insurance information
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Patient info card
+    st.markdown(f"""
+    <div class="medical-card" style="text-align: center; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); margin-bottom: 2rem;">
+        <h3 style="margin: 0 0 1rem 0; color: var(--primary-blue);">👤 {patient_name}</h3>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Back button
+    if st.button("🏠 Back to Home", type="primary", use_container_width=True):
+        st.session_state.current_view = "home"
+        st.rerun()
     
     # Get insurance information
     insurance_info = get_patient_insurance(patient_id)
@@ -424,38 +478,64 @@ def show_patient_billing():
     # Get visit information for billing context
     visit_info = get_patient_visit(patient_id)
     
-    # Billing Overview
-    st.markdown("### 📊 Billing Overview")
+    # Billing Overview with beautiful styling
+    st.markdown("""
+    <div style="margin: 2rem 0;">
+        <h2 style="color: var(--primary-blue); margin-bottom: 1rem;">📊 Billing Overview</h2>
+        <p style="color: var(--gray-600); margin: 0;">Key financial and insurance information</p>
+    </div>
+    """, unsafe_allow_html=True)
     
     col1, col2, col3 = st.columns(3)
     
     with col1:
         if insurance_info:
-            st.metric("Insurance Provider", insurance_info.get('InsuranceProvider', 'N/A'))
+            st.markdown(create_metric_card(
+                insurance_info.get('InsuranceProvider', 'N/A'), 
+                "Insurance Provider", 
+                "🛡️", 
+                "success"
+            ), unsafe_allow_html=True)
         else:
-            st.metric("Insurance Provider", "No Insurance")
+            st.markdown(create_metric_card("No Insurance", "Insurance Provider", "❌", "danger"), unsafe_allow_html=True)
     
     with col2:
         if insurance_info and insurance_info.get('Deductible'):
             try:
                 # Convert to float and format properly
                 deductible = float(insurance_info.get('Deductible', 0))
-                st.metric("Deductible", f"${deductible:,.2f}")
+                st.markdown(create_metric_card(
+                    f"${deductible:,.2f}", 
+                    "Deductible", 
+                    "💰", 
+                    "warning"
+                ), unsafe_allow_html=True)
             except (ValueError, TypeError):
-                st.metric("Deductible", insurance_info.get('Deductible', 'N/A'))
+                st.markdown(create_metric_card(
+                    insurance_info.get('Deductible', 'N/A'), 
+                    "Deductible", 
+                    "💰", 
+                    "warning"
+                ), unsafe_allow_html=True)
         else:
-            st.metric("Deductible", "$0.00")
+            st.markdown(create_metric_card("$0.00", "Deductible", "💰", "success"), unsafe_allow_html=True)
     
     with col3:
         if visit_info:
-            st.metric("Current Visit", "Active")
+            st.markdown(create_metric_card("Active", "Current Visit", "🏥", "success"), unsafe_allow_html=True)
         else:
-            st.metric("Current Visit", "None")
+            st.markdown(create_metric_card("None", "Current Visit", "🏥", "warning"), unsafe_allow_html=True)
     
-    st.markdown("---")
+    # Add medical divider
+    st.markdown(create_medical_divider(), unsafe_allow_html=True)
     
-    # Insurance Details
-    st.markdown("### 🏥 Insurance Details")
+    # Insurance Details with beautiful styling
+    st.markdown("""
+    <div style="margin: 2rem 0;">
+        <h2 style="color: var(--secondary-teal); margin-bottom: 1rem;">🏥 Insurance Details</h2>
+        <p style="color: var(--gray-600); margin: 0;">Your insurance coverage information</p>
+    </div>
+    """, unsafe_allow_html=True)
     
     if insurance_info:
         with st.expander("Insurance Information", expanded=True):
@@ -478,8 +558,13 @@ def show_patient_billing():
     
     st.markdown("---")
     
-    # Visit Information for Billing Context
-    st.markdown("### 🏥 Visit Information")
+    # Visit Information for Billing Context with beautiful styling
+    st.markdown("""
+    <div style="margin: 2rem 0;">
+        <h2 style="color: var(--accent-green); margin-bottom: 1rem;">🏥 Visit Information</h2>
+        <p style="color: var(--gray-600); margin: 0;">Current visit details for billing context</p>
+    </div>
+    """, unsafe_allow_html=True)
     
     if visit_info:
         with st.expander("Current Visit Details", expanded=True):
@@ -493,8 +578,13 @@ def show_patient_billing():
     
     st.markdown("---")
     
-    # Billing Actions
-    st.markdown("### 💳 Billing Actions")
+    # Billing Actions with beautiful styling
+    st.markdown("""
+    <div style="margin: 2rem 0;">
+        <h2 style="color: var(--accent-purple); margin-bottom: 1rem;">💳 Billing Actions</h2>
+        <p style="color: var(--gray-600); margin: 0;">Manage your billing and payments</p>
+    </div>
+    """, unsafe_allow_html=True)
     
     col1, col2 = st.columns(2)
     
@@ -508,6 +598,16 @@ def show_patient_billing():
 
 def show_patient_inbox():
     """Show patient inbox and messaging system"""
+    # Medical-themed header
+    st.markdown("""
+    <div style="text-align: center; margin-bottom: 2rem;">
+        <h1 style="margin-bottom: 0.5rem;">📬 Patient Inbox</h1>
+        <p style="font-size: 1.2rem; color: var(--gray-600); margin: 0;">
+            View and send messages with your healthcare team
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+    
     # Get current patient ID from session state
     patient_id = st.session_state.get('current_patient_id', 1)
     patient_info = get_patient_info(patient_id)
@@ -517,6 +617,13 @@ def show_patient_inbox():
         return
     
     patient_name = f"{patient_info.get('FirstName', 'Unknown')} {patient_info.get('LastName', 'Unknown')}"
+    
+    # Patient info card
+    st.markdown(f"""
+    <div class="medical-card" style="text-align: center; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); margin-bottom: 2rem;">
+        <h3 style="margin: 0 0 1rem 0; color: var(--primary-blue);">👤 {patient_name}</h3>
+    </div>
+    """, unsafe_allow_html=True)
     
     # Header with back button
     col1, col2 = st.columns([4, 1])

@@ -11,12 +11,10 @@ from streamlit_extras.app_logo import add_logo
 from modules.nav import SideBarLinks
 
 ## Page config - MUST be first Streamlit command
-st.set_page_config(
-    page_title="Doctor Patients",
-    page_icon="👥",
-    layout="wide",
-    initial_sidebar_state="expanded",
-)
+from modules.styles import apply_page_styling, create_metric_card, create_patient_card, create_medical_divider
+
+## Apply medical theme and styling
+apply_page_styling()
 
 ## Add logo and navigation
 SideBarLinks()
@@ -164,8 +162,15 @@ def main():
 
 def show_patient_list():
     """Show the main patient list with search and filtering"""
-    st.write("# Patient Management")
-    st.write("View and manage patient information.")
+    # Medical-themed header
+    st.markdown("""
+    <div style="text-align: center; margin-bottom: 2rem;">
+        <h1 style="margin-bottom: 0.5rem;">👥 Patient Management</h1>
+        <p style="font-size: 1.2rem; color: var(--gray-600); margin: 0;">
+            View and manage patient information
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
     
     # Get all patients
     patients = get_patients()
@@ -231,31 +236,32 @@ def show_patient_list():
         
         # Create interactive patient cards instead of dataframe
         for patient in filtered_patients:
-            with st.container():
-                col1, col2, col3 = st.columns([3, 1, 1])
-                
-                with col1:
-                    st.markdown(f"""
-                    **{patient.get('FirstName', 'N/A')} {patient.get('LastName', 'N/A')}**
-                    - ID: {patient.get('PatientID', 'N/A')}
-                    - DOB: {patient.get('DOB', 'N/A')}
-                    - Blood Type: {patient.get('BloodType', 'N/A')}
-                    - Weight: {patient.get('Weight', 'N/A')} lbs
-                    """)
-                
-                with col2:
-                    if st.button("📋 Details", key=f"details_{patient.get('PatientID')}", use_container_width=True):
-                        st.session_state.selected_patient = patient.get('PatientID')
-                        st.session_state.current_view = "details"
-                        st.rerun()
-                
-                with col3:
-                    if st.button("💊 Meds", key=f"meds_{patient.get('PatientID')}", use_container_width=True):
-                        st.session_state.selected_patient = patient.get('PatientID')
-                        st.session_state.current_view = "medications"
-                        st.rerun()
-                
-                st.divider()
+            # Use the new patient card component
+            st.markdown(create_patient_card(patient), unsafe_allow_html=True)
+            
+            # Action buttons below the card
+            col1, col2, col3 = st.columns([1, 1, 1])
+            
+            with col1:
+                if st.button("📋 Details", key=f"details_{patient.get('PatientID')}", use_container_width=True, type="primary"):
+                    st.session_state.selected_patient = patient.get('PatientID')
+                    st.session_state.current_view = "details"
+                    st.rerun()
+            
+            with col2:
+                if st.button("💊 Meds", key=f"meds_{patient.get('PatientID')}", use_container_width=True, type="primary"):
+                    st.session_state.selected_patient = patient.get('PatientID')
+                    st.session_state.current_view = "medications"
+                    st.rerun()
+            
+            with col3:
+                if st.button("📊 Vitals", key=f"vitals_{patient.get('PatientID')}", use_container_width=True, type="primary"):
+                    st.session_state.selected_patient = patient.get('PatientID')
+                    st.session_state.current_view = "vitals"
+                    st.rerun()
+            
+            # Add medical divider between patients
+            st.markdown(create_medical_divider(), unsafe_allow_html=True)
     else:
         st.info("No patients match your search criteria.")
 
@@ -527,5 +533,4 @@ def show_patient_medications():
                 st.error("Please enter a medication name and valid dosage amount")
 
 ## Run the main app
-if __name__ == "__main__":
-    main()
+main()

@@ -6,9 +6,10 @@ import requests
 import streamlit as st
 
 from modules.nav import SideBarLinks
+from modules.styles import apply_page_styling, create_alert_card, create_medical_divider
 
-
-st.set_page_config(page_title="Nurse Alerts", page_icon="🚨", layout="wide")
+## Apply medical theme and styling
+apply_page_styling()
 
 # Sidebar navigation
 SideBarLinks()
@@ -85,7 +86,15 @@ def create_alert(payload: dict):
         return None
 
 
-st.title("Alerts")
+# Medical-themed header
+st.markdown("""
+<div style="text-align: center; margin-bottom: 2rem;">
+    <h1 style="margin-bottom: 0.5rem;">🚨 Nurse Alerts</h1>
+    <p style="font-size: 1.2rem; color: var(--gray-600); margin: 0;">
+        Monitor and respond to patient alerts
+    </p>
+</div>
+""", unsafe_allow_html=True)
 
 # Load data
 alerts = list_alerts(DEFAULT_NURSE_ID)

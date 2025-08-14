@@ -6,9 +6,10 @@ import requests
 import streamlit as st
 
 from modules.nav import SideBarLinks
+from modules.styles import apply_page_styling, create_medical_divider
 
-
-st.set_page_config(page_title="Nurse Treatments", page_icon="💊", layout="wide")
+## Apply medical theme and styling
+apply_page_styling()
 
 SideBarLinks()
 
@@ -80,7 +81,15 @@ def administer_medication(patient_id: int, medication_id: int):
         return False, f"Service unreachable: {ex}"
 
 
-st.title("Treatments")
+# Medical-themed header
+st.markdown("""
+<div style="text-align: center; margin-bottom: 2rem;">
+    <h1 style="margin-bottom: 0.5rem;">💊 Nurse Treatments</h1>
+    <p style="font-size: 1.2rem; color: var(--gray-600); margin: 0;">
+        Manage patient treatments and medications
+    </p>
+</div>
+""", unsafe_allow_html=True)
 
 top_l, top_r = st.columns([3, 1])
 with top_l:
@@ -114,14 +123,18 @@ if selected_pid:
     meds = get_patient_medications(int(selected_pid))
 
     # Header
-    st.subheader("Patient Summary")
+    st.markdown("### 👤 Patient Summary")
     if p:
-        st.write(f"PatientID: {p.get('PatientID','-')}")
-        st.write(f"Name: {p.get('FirstName','')} {p.get('LastName','')}")
-        st.write(f"DOB: {p.get('DOB','-')}  •  BloodType: {p.get('BloodType','-')}")
+        st.markdown(f"""
+        <div class="medical-card">
+            <strong>Patient ID:</strong> {p.get('PatientID','-')}<br>
+            <strong>Name:</strong> {p.get('FirstName','')} {p.get('LastName','')}<br>
+            <strong>DOB:</strong> {p.get('DOB','-')}  •  <strong>Blood Type:</strong> {p.get('BloodType','-')}
+        </div>
+        """, unsafe_allow_html=True)
 
-    st.divider()
-    st.subheader("Current Prescriptions")
+    st.markdown(create_medical_divider(), unsafe_allow_html=True)
+    st.markdown("### 💊 Current Prescriptions")
     df_m = pd.DataFrame(meds)
     if not df_m.empty:
         # Friendly column order if present
@@ -137,10 +150,10 @@ if selected_pid:
         
         st.dataframe(df_m[cols] if cols else df_m, use_container_width=True, hide_index=True)
     else:
-        st.caption("No medications linked to this patient.")
+        st.info("No medications linked to this patient.")
 
-    st.divider()
-    st.subheader("Medication Administration")
+    st.markdown(create_medical_divider(), unsafe_allow_html=True)
+    st.markdown("### 💉 Medication Administration")
     
     if not df_m.empty:
         # Create medication selection for administration
@@ -179,18 +192,26 @@ if selected_pid:
 
                 # Administration form
                 with st.form("administer_medication"):
-                    st.write("**Administration Details**")
+                    st.markdown("### 📋 Administration Details")
 
                     col1, col2 = st.columns(2)
                     with col1:
-                        st.write(f"**Medication:** {med_details.get('PrescriptionName', 'Unknown')}")
-                        st.write(f"**Dosage:** {med_details.get('DosageAmount', '')} {med_details.get('DosageUnit', '')}")
-                        st.write(f"**Frequency:** {frequency_amount} {med_details.get('FrequencyPeriod', '')}")
+                        st.markdown(f"""
+                        <div class="medical-card">
+                            <strong>Medication:</strong> {med_details.get('PrescriptionName', 'Unknown')}<br>
+                            <strong>Dosage:</strong> {med_details.get('DosageAmount', '')} {med_details.get('DosageUnit', '')}<br>
+                            <strong>Frequency:</strong> {frequency_amount} {med_details.get('FrequencyPeriod', '')}
+                        </div>
+                        """, unsafe_allow_html=True)
 
                     with col2:
-                        st.write(f"**Current Refills:** {med_details.get('RefillsLeft', 0)}")
-                        st.write(f"**Refills After Admin:** {max(0, (med_details.get('RefillsLeft', 0) or 0) - frequency_amount)}")
-                        st.write(f"**Pickup Location:** {med_details.get('PickUpLocation', 'N/A')}")
+                        st.markdown(f"""
+                        <div class="medical-card">
+                            <strong>Current Refills:</strong> {med_details.get('RefillsLeft', 0)}<br>
+                            <strong>Refills After Admin:</strong> {max(0, (med_details.get('RefillsLeft', 0) or 0) - frequency_amount)}<br>
+                            <strong>Pickup Location:</strong> {med_details.get('PickUpLocation', 'N/A')}
+                        </div>
+                        """, unsafe_allow_html=True)
 
                     # Submit button disabled after first successful submission
                     if st.form_submit_button("Administered Medication", type="primary", disabled=already_done):
