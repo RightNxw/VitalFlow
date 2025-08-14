@@ -43,6 +43,52 @@ def get_patients():
             {"PatientID": 2, "FirstName": "John", "LastName": "Smith", "DOB": "1985-05-15", "BloodType": "A-", "Weight": 180}
         ]
 
+def get_doctor_patients(doctor_id):
+    """Get patients assigned to a specific doctor"""
+    try:
+        # First try to get patients directly assigned to this doctor
+        response = requests.get(f"{API_BASE_URL}/patient/")
+        if response.status_code == 200:
+            all_patients = response.json()
+            
+            # Look for patients with this doctor assigned
+            assigned_patients = []
+            
+            # Check different possible field names for doctor assignment
+            for patient in all_patients:
+                if (patient.get('DoctorID') == doctor_id or 
+                    patient.get('AssignedDoctorID') == doctor_id or
+                    patient.get('PrimaryDoctorID') == doctor_id or
+                    patient.get('AttendingDoctorID') == doctor_id):
+                    assigned_patients.append(patient)
+            
+            if assigned_patients:
+                return assigned_patients
+            
+            # If no direct assignment, try to find through visits (as fallback)
+            visits_response = requests.get(f"{API_BASE_URL}/visit/")
+            if visits_response.status_code == 200:
+                visits = visits_response.json()
+                
+                # Get unique patient IDs from doctor's visits
+                doctor_visits = [v for v in visits if v.get('DoctorID') == doctor_id]
+                patient_ids = list(set([v.get('PatientID') for v in doctor_visits if v.get('PatientID')]))
+                
+                if patient_ids:
+                    # Get patient details for each patient ID
+                    patients = []
+                    for patient_id in patient_ids:
+                        patient_response = requests.get(f"{API_BASE_URL}/patient/{patient_id}")
+                        if patient_response.status_code == 200:
+                            patients.append(patient_response.json())
+                    return patients
+            
+            return []
+        else:
+            return []
+    except Exception as e:
+        return []
+
 def get_patient_details(patient_id):
     """Get detailed patient information"""
     try:
@@ -172,12 +218,30 @@ def show_patient_list():
     </div>
     """, unsafe_allow_html=True)
     
-    # Get all patients
-    patients = get_patients()
+    # Doctor filter toggle
+    col1, col2, col3 = st.columns([2, 1, 1])
+    with col1:
+        show_my_patients = st.checkbox("👨‍⚕️ Show only my patients", value=False, help="Filter to show only patients assigned to you")
+    with col2:
+        if show_my_patients:
+            doctor_id = st.selectbox("Select Doctor ID", options=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10], help="Select your doctor ID")
+        else:
+            doctor_id = None
+    with col3:
+        if st.button("🔄 Refresh", use_container_width=True):
+            st.rerun()
     
-    if not patients:
-        st.warning("No patients found.")
-        st.stop()
+    # Get patients based on filter
+    if show_my_patients and doctor_id:
+        patients = get_doctor_patients(doctor_id)
+        if not patients:
+            st.info(f"No patients found assigned to Doctor {doctor_id}")
+            patients = get_patients()  # Fallback to all patients
+    else:
+        patients = get_patients()
+        if not patients:
+            st.warning("No patients found.")
+            st.stop()
     
     # Patient search and filtering
     col1, col2 = st.columns([3, 1])
@@ -232,7 +296,10 @@ def show_patient_list():
     
     # Display patient data
     if filtered_patients:
-        st.markdown(f"### Showing {len(filtered_patients)} patients")
+        if show_my_patients and doctor_id:
+            st.markdown(f"### 👨‍⚕️ Showing {len(filtered_patients)} patients assigned to Doctor {doctor_id}")
+        else:
+            st.markdown(f"### 👥 Showing {len(filtered_patients)} patients")
         
         # Create interactive patient cards instead of dataframe
         for patient in filtered_patients:
