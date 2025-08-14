@@ -259,7 +259,123 @@ def show_patient_details():
                 """)
     
     with tab2:
+
         st.markdown("### Vital Signs/Update")
+
+        st.markdown("### Vital Signs")
+        if vitals:
+            for vital in vitals:
+                # Safe timestamp handling
+                timestamp = vital.get('Timestamp', 'N/A')
+                if timestamp and timestamp != 'N/A':
+                    try:
+                        # Try to format the timestamp if it's valid
+                        if isinstance(timestamp, str):
+                            timestamp_str = timestamp
+                        else:
+                            timestamp_str = str(timestamp)
+                    except:
+                        timestamp_str = 'Unknown Time'
+                else:
+                    timestamp_str = 'No Timestamp'
+                
+                with st.expander(f"Vital Record - {timestamp_str}"):
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        st.metric("Heart Rate", f"{vital.get('HeartRate', 'N/A')} bpm")
+                        st.metric("Blood Pressure", vital.get('BloodPressure', 'N/A'))
+                    with col2:
+                        st.metric("Temperature", f"{vital.get('Temperature', 'N/A')}°F")
+                        st.metric("Respiratory Rate", f"{vital.get('RespiratoryRate', 'N/A')} /min")
+        else:
+            st.info("No vital records found")
+    
+    with tab3:
+        st.markdown("### Medical Conditions")
+        if conditions:
+            for condition in conditions:
+                with st.expander(f"Condition: {condition.get('Description', 'N/A')}"):
+                    st.markdown(f"**Treatment:** {condition.get('Treatment', 'N/A')}")
+        else:
+            st.info("No conditions found")
+    
+    with tab4:
+        st.markdown("### Current Medications")
+        if medications:
+            # Create DataFrame for better display
+            df_m = pd.DataFrame(medications)
+            if not df_m.empty:
+                # Friendly column order if present
+                order = [
+                    "PrescriptionName", "DosageAmount", "DosageUnit", "FrequencyAmount", "FrequencyPeriod",
+                    "PickUpLocation", "RefillsLeft", "PrescribedDate", "EndDate", "MedicationID"
+                ]
+                cols = [c for c in order if c in df_m.columns]
+                # Ensure date-like columns render nicely
+                for c in ["PrescribedDate", "EndDate"]:
+                    if c in df_m.columns:
+                        df_m[c] = pd.to_datetime(df_m[c], errors="coerce").dt.date
+                
+                st.dataframe(df_m[cols] if cols else df_m, use_container_width=True, hide_index=True)
+            else:
+                st.info("No medications found")
+        else:
+            st.info("No medications found")
+
+def show_patient_chart():
+    """Show and edit patient chart/vitals"""
+    if not st.session_state.selected_patient:
+        st.error("No patient selected")
+        return
+    
+    patient_id = st.session_state.selected_patient
+    patient_data = get_patient_details(patient_id)
+    
+    if not patient_data:
+        st.error("Could not load patient data")
+        return
+    
+    patient = patient_data['patient']
+    vitals = patient_data['vitals']
+    
+    # Header
+    col1, col2 = st.columns([4, 1])
+    with col1:
+        st.markdown(f"## 📊 Patient Chart: {patient.get('FirstName', '')} {patient.get('LastName', '')}")
+    with col2:
+        if st.button("← Back to List"):
+            st.session_state.current_view = "list"
+            st.rerun()
+    
+    # Current vitals display
+    st.markdown("### Current Vital Signs")
+    if vitals and len(vitals) > 0:
+        latest_vital = vitals[-1]
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            st.metric("Heart Rate", f"{latest_vital.get('HeartRate', 'N/A')} bpm")
+        with col2:
+            st.metric("Blood Pressure", latest_vital.get('BloodPressure', 'N/A'))
+        with col3:
+            st.metric("Temperature", f"{latest_vital.get('Temperature', 'N/A')}°F")
+        with col4:
+            st.metric("Respiratory Rate", f"{latest_vital.get('RespiratoryRate', 'N/A')} /min")
+    else:
+        st.info("No vital records found")
+    
+    # Add new vitals
+    st.markdown("### Add New Vital Signs")
+    with st.form("new_vitals"):
+        col1, col2 = st.columns(2)
+        with col1:
+            heart_rate = st.number_input("Heart Rate (bpm)", min_value=0, max_value=300, value=72)
+            blood_pressure = st.text_input("Blood Pressure", placeholder="120/80")
+            temperature = st.number_input("Temperature (°F)", min_value=90.0, max_value=110.0, value=98.6, step=0.1)
+        with col2:
+            respiratory_rate = st.number_input("Respiratory Rate (/min)", min_value=0, max_value=60, value=16)
+            oxygen_saturation = st.number_input("Oxygen Saturation (%)", min_value=70, max_value=100, value=98)
+            timestamp = st.datetime_input("Timestamp", value=datetime.now())
+
         
         # Display current vitals from database
       

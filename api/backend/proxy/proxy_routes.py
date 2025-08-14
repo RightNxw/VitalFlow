@@ -1,3 +1,5 @@
+
+
 from flask import Blueprint, jsonify, request
 from backend.db_connection import db
 from mysql.connector import Error
@@ -32,6 +34,24 @@ def get_proxy(proxy_id):
         cursor = db.get_db().cursor()
         
         cursor.execute("SELECT * FROM Proxy WHERE ProxyID = %s", (proxy_id,))
+        proxy = cursor.fetchone()
+        
+        if not proxy:
+            return jsonify({"error": "Proxy not found"}), 404
+            
+        cursor.close()
+        return jsonify(proxy), 200
+    except Error as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# Get proxy by name (FirstName and LastName)
+@proxies.route("/proxies/name/<string:first_name>/<string:last_name>", methods=["GET"])
+def get_proxy_by_name(first_name, last_name):
+    try:
+        cursor = db.get_db().cursor()
+        
+        cursor.execute("SELECT * FROM Proxy WHERE FirstName = %s AND LastName = %s", (first_name, last_name))
         proxy = cursor.fetchone()
         
         if not proxy:
