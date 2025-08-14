@@ -8,16 +8,16 @@ from datetime import datetime
 from streamlit_extras.app_logo import add_logo
 from modules.nav import SideBarLinks
 
-## Add logo and navigation
-SideBarLinks()
-
-## Page config
+## Page config - MUST be first Streamlit command
 st.set_page_config(
     page_title="Nurse Messages - Inbox & Alerts",
     page_icon="📥",
     layout="wide",
     initial_sidebar_state="expanded",
 )
+
+## Add logo and navigation
+SideBarLinks()
 
 st.write("# 📥 Nurse Inbox & Messages")
 st.write("View messages and create new ones.")
