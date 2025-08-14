@@ -84,7 +84,7 @@ SideBarLinks()
 st.title("Nurse Dashboard")
 
 # Load data
-alerts = list_alerts(DEFAULT_NURSE_ID) if (refresh or True) else []
+alerts = get_alerts(DEFAULT_NURSE_ID)
 patients = get_patients()
 
 df_alerts = pd.DataFrame(alerts)
@@ -104,14 +104,6 @@ with st.container():
     c4.metric("Last alert", "-" if not last_alert_time else last_alert_time.strftime("%Y-%m-%d %H:%M"))
 
 st.divider()
-
-# Controls row
-ctrl_l, ctrl_r = st.columns([3, 1])
-with ctrl_l:
-    auto_refresh = st.checkbox("Auto refresh", value=False)
-    refresh = st.button("Refresh")
-with ctrl_r:
-    pass  # Removed NurseID input since we know which nurse is logged in
 
 lc, rc = st.columns([2, 1])
 

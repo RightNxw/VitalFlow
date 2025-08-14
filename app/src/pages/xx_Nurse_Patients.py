@@ -79,11 +79,10 @@ ctrl_l, ctrl_r = st.columns([3, 1])
 with ctrl_l:
     q = st.text_input("Search name, blood type…")
     only_mine = st.checkbox("Only my patients", value=True)
-    refresh = st.button("Refresh")
 with ctrl_r:
     pass  # Removed NurseID input since we know which nurse is logged in
 
-patients = list_patients() if (refresh or True) else []
+patients = list_patients()
 df = pd.DataFrame(patients)
 if not df.empty:
     # Filters

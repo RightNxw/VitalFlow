@@ -75,16 +75,8 @@ def get_alert(alert_id):
 ## Get alerts for current doctor
 doctor_id = st.session_state.get('current_doctor_id', DEFAULT_DOCTOR_ID)
 
-# Controls row
-ctrl_l, ctrl_r = st.columns([3, 1])
-with ctrl_l:
-    auto_refresh = st.checkbox("Auto refresh", value=False)
-    refresh = st.button("Refresh")
-with ctrl_r:
-    pass  # Removed DoctorID input since we know which doctor is logged in
-
 # Load data
-alerts = get_alerts(int(doctor_id)) if (refresh or True) else []
+alerts = get_alerts(doctor_id)
 df = pd.DataFrame(alerts)
 if not df.empty:
     if "SentTime" in df.columns:

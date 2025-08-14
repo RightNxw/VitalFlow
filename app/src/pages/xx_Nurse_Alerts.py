@@ -87,16 +87,8 @@ def create_alert(payload: dict):
 
 st.title("Alerts")
 
-# Controls row
-ctrl_l, ctrl_r = st.columns([3, 1])
-with ctrl_l:
-    auto_refresh = st.checkbox("Auto refresh", value=False)
-    refresh = st.button("Refresh")
-with ctrl_r:
-    pass  # Removed NurseID input since we know which nurse is logged in
-
 # Load data
-alerts = list_alerts(DEFAULT_NURSE_ID) if (refresh or True) else []
+alerts = list_alerts(DEFAULT_NURSE_ID)
 df = pd.DataFrame(alerts)
 if not df.empty:
     if "SentTime" in df.columns:
