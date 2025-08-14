@@ -9,7 +9,7 @@ nurses = Blueprint("nurses", __name__)
 
 # Get all nurses
 # Available to Proxy-4.6
-@nurses.route("/nurses", methods=["GET"])
+@nurses.route("/", methods=["GET"])
 def get_all_nurses():
     try:
         current_app.logger.info('Starting get_all_nurses request')
@@ -28,7 +28,7 @@ def get_all_nurses():
 
 # Get a specific nurse with FirstName and LastName
 # Available to Proxy-4.6
-@nurses.route("/nurses/<int:nurse_id>", methods=["GET"])
+@nurses.route("/<int:nurse_id>", methods=["GET"])
 def get_nurse(nurse_id):
     try:
         cursor = db.get_db().cursor()

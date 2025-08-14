@@ -34,7 +34,7 @@ API_BASE_URL = "http://web-api:4000"
 def get_patients():
     """Get all patients from API"""
     try:
-        response = requests.get(f"{API_BASE_URL}/patient/patients")
+        response = requests.get(f"{API_BASE_URL}/patient/")
         if response.status_code == 200:
             return response.json()
         return []
@@ -49,18 +49,18 @@ def get_patient_details(patient_id):
     """Get detailed patient information"""
     try:
         # Get patient basic info
-        patient_response = requests.get(f"{API_BASE_URL}/patient/patients/{patient_id}")
+        patient_response = requests.get(f"{API_BASE_URL}/patient/{patient_id}")
         if patient_response.status_code != 200:
             return None
             
         patient = patient_response.json()
         
         # Get patient vitals
-        vitals_response = requests.get(f"{API_BASE_URL}/patient/patients/{patient_id}/vitals")
+        vitals_response = requests.get(f"{API_BASE_URL}/patient/{patient_id}/vitals")
         vitals = vitals_response.json() if vitals_response.status_code == 200 else []
         
         # Get patient medications
-        meds_response = requests.get(f"{API_BASE_URL}/patient/patients/{patient_id}/medications")
+        meds_response = requests.get(f"{API_BASE_URL}/patient/{patient_id}/medications")
         medications = meds_response.json() if meds_response.status_code == 200 else []
         
         return {
@@ -74,7 +74,7 @@ def get_patient_details(patient_id):
 def get_all_medications():
     """Get all available medications from API"""
     try:
-        response = requests.get(f"{API_BASE_URL}/medication/medications")
+        response = requests.get(f"{API_BASE_URL}/medication/")
         if response.status_code == 200:
             return response.json()
         return []
@@ -84,7 +84,7 @@ def get_all_medications():
 def update_patient_vitals(patient_id, vitals_data):
     """Update patient vitals"""
     try:
-        response = requests.post(f"{API_BASE_URL}/vital/vitalcharts", json=vitals_data)
+        response = requests.post(f"{API_BASE_URL}/vital/", json=vitals_data)
         return response.status_code == 201
     except:
         return False
@@ -103,7 +103,7 @@ def update_patient_medications(patient_id, medication_data):
             "FrequencyPeriod": medication_data["FrequencyPeriod"]
         }
         
-        med_response = requests.post(f"{API_BASE_URL}/medication/medications", json=medication_create_data)
+        med_response = requests.post(f"{API_BASE_URL}/medication/", json=medication_create_data)
         
         if med_response.status_code != 201:
             st.error(f"Failed to create medication: {med_response.text}")
@@ -123,7 +123,7 @@ def update_patient_medications(patient_id, medication_data):
             "EndDate": medication_data["EndDate"]
         }
         
-        link_response = requests.post(f"{API_BASE_URL}/medication/patient-medication", json=patient_med_data)
+        link_response = requests.post(f"{API_BASE_URL}/medication/patient_medications", json=patient_med_data)
         
         if link_response.status_code != 201:
             st.error(f"Failed to link patient to medication: {link_response.text}")

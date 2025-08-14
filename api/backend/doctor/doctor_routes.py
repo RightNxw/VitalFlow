@@ -9,7 +9,7 @@ doctors = Blueprint("doctors", __name__)
 
 # Get all doctors
 # Available to Patient-3.4
-@doctors.route("/doctors", methods=["GET"])
+@doctors.route("/", methods=["GET"])
 def get_all_doctors():
     try:
         current_app.logger.info('Starting get_all_doctors request')
@@ -27,7 +27,7 @@ def get_all_doctors():
 
 
 # Get a specific doctor
-@doctors.route("/doctors/<int:doctor_id>", methods=["GET"])
+@doctors.route("/<int:doctor_id>", methods=["GET"])
 def get_doctor(doctor_id):
     try:
         cursor = db.get_db().cursor()

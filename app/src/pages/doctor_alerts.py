@@ -24,7 +24,7 @@ API_BASE_URL = "http://web-api:4000"
 def get_alerts(doctor_id):
     """Get alerts for specific doctor"""
     try:
-        response = requests.get(f"{API_BASE_URL}/alerts?user_type=doctor&user_id={doctor_id}")
+        response = requests.get(f"{API_BASE_URL}/alert/?user_type=doctor&user_id={doctor_id}")
         if response.status_code == 200:
             return response.json()
         return []

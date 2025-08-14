@@ -8,7 +8,7 @@ conditions = Blueprint("conditions", __name__)
 
 
 # Get all conditions
-@conditions.route("/conditions", methods=["GET"])
+@conditions.route("/", methods=["GET"])
 def get_all_conditions():
     try:
         current_app.logger.info('Starting get_all_conditions request')
@@ -27,7 +27,7 @@ def get_all_conditions():
 
 # Create a new condition
 # Available to Doctor-1.1
-@conditions.route("/conditions", methods=["POST"])
+@conditions.route("/", methods=["POST"])
 def create_condition():
     try:
         data = request.get_json()
@@ -61,9 +61,9 @@ def create_condition():
         return jsonify({"error": str(e)}), 500
 
 
-# Get a specific condition with Description and Treatment
+# Get details for a specific condition
 # Available to Doctor-1.1 and Proxy-4.3
-@conditions.route("/conditions/<int:condition_id>", methods=["GET"])
+@conditions.route("/<int:condition_id>", methods=["GET"])
 def get_condition(condition_id):
     try:
         cursor = db.get_db().cursor()
@@ -80,9 +80,9 @@ def get_condition(condition_id):
         return jsonify({"error": str(e)}), 500
 
 
-# Update condition/triage
+# Update condition information
 # Available to Nurse-2.2
-@conditions.route("/conditions/<int:condition_id>", methods=["PUT"])
+@conditions.route("/<int:condition_id>", methods=["PUT"])
 def update_condition(condition_id):
     try:
         data = request.get_json()

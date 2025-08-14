@@ -10,7 +10,7 @@ proxies = Blueprint("proxies", __name__)
 
 
 # Get all proxies
-@proxies.route("/proxies", methods=["GET"])
+@proxies.route("/", methods=["GET"])
 def get_all_proxies():
     try:
         current_app.logger.info('Starting get_all_proxies request')
@@ -28,7 +28,7 @@ def get_all_proxies():
 
 
 # Get a specific proxy with FirstName, LastName, and Relationship
-@proxies.route("/proxies/<int:proxy_id>", methods=["GET"])
+@proxies.route("/<int:proxy_id>", methods=["GET"])
 def get_proxy(proxy_id):
     try:
         cursor = db.get_db().cursor()
@@ -46,7 +46,7 @@ def get_proxy(proxy_id):
 
 
 # Get proxy by name (FirstName and LastName)
-@proxies.route("/proxies/name/<string:first_name>/<string:last_name>", methods=["GET"])
+@proxies.route("/name/<string:first_name>/<string:last_name>", methods=["GET"])
 def get_proxy_by_name(first_name, last_name):
     try:
         cursor = db.get_db().cursor()
@@ -65,7 +65,7 @@ def get_proxy_by_name(first_name, last_name):
 
 # Get all patients where Proxy.PatientID matches
 # Available to Proxy-4.1 through 4.6
-@proxies.route("/proxies/<int:proxy_id>/patients", methods=["GET"])
+@proxies.route("/<int:proxy_id>/patients", methods=["GET"])
 def get_proxy_patients(proxy_id):
     try:
         cursor = db.get_db().cursor()

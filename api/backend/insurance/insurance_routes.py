@@ -8,7 +8,7 @@ insurance = Blueprint("insurance", __name__)
 
 
 # Get all insurance providers
-@insurance.route("/insurance", methods=["GET"])
+@insurance.route("/", methods=["GET"])
 def get_all_insurance():
     try:
         current_app.logger.info('Starting get_all_insurance request')
@@ -26,7 +26,7 @@ def get_all_insurance():
 
 
 # Get insurance with InsuranceProvider, PolicyNumber, and Deductible
-@insurance.route("/insurance/<int:insurance_id>", methods=["GET"])
+@insurance.route("/<int:insurance_id>", methods=["GET"])
 def get_insurance(insurance_id):
     try:
         cursor = db.get_db().cursor()

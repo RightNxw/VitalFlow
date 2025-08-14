@@ -8,7 +8,7 @@ visits = Blueprint("visits", __name__)
 
 
 # Get all visits
-@visits.route("/visits", methods=["GET"])
+@visits.route("/", methods=["GET"])
 def get_all_visits():
     try:
         current_app.logger.info('Starting get_all_visits request')
@@ -26,7 +26,7 @@ def get_all_visits():
 
 
 # Create a new visit
-@visits.route("/visits", methods=["POST"])
+@visits.route("/", methods=["POST"])
 def create_visit():
     try:
         data = request.get_json()
@@ -63,7 +63,7 @@ def create_visit():
 
 # Get details for a specific visit
 # Available to Proxy-4.2, Patient-3.6, and Proxy-4.5
-@visits.route("/visits/<int:visit_id>", methods=["GET"])
+@visits.route("/<int:visit_id>", methods=["GET"])
 def get_visit(visit_id):
     try:
         cursor = db.get_db().cursor()
@@ -81,7 +81,7 @@ def get_visit(visit_id):
 
 
 # Update visit information (such as NextVisitDate)
-@visits.route("/visits/<int:visit_id>", methods=["PUT"])
+@visits.route("/<int:visit_id>", methods=["PUT"])
 def update_visit(visit_id):
     try:
         data = request.get_json()

@@ -30,7 +30,7 @@ API_BASE_URL = "http://web-api:4000"
 def get_proxies():
     """Get all proxies from API"""
     try:
-        response = requests.get(f"{API_BASE_URL}/proxies")
+        response = requests.get(f"{API_BASE_URL}/proxy/")
         if response.status_code == 200:
             return response.json()
         return []
@@ -41,7 +41,7 @@ def get_proxies():
 def get_proxy_by_name(first_name, last_name):
     """Get proxy information by name"""
     try:
-        response = requests.get(f"{API_BASE_URL}/proxies/name/{first_name}/{last_name}")
+        response = requests.get(f"{API_BASE_URL}/proxy/name/{first_name}/{last_name}")
         if response.status_code == 200:
             return response.json()
         return None
@@ -52,7 +52,7 @@ def get_proxy_by_name(first_name, last_name):
 def get_doctors():
     """Get all doctors for recipient selection"""
     try:
-        response = requests.get(f"{API_BASE_URL}/doctors")
+        response = requests.get(f"{API_BASE_URL}/doctor/")
         if response.status_code == 200:
             return response.json()
         return []
@@ -62,7 +62,7 @@ def get_doctors():
 def get_nurses():
     """Get all nurses for recipient selection"""
     try:
-        response = requests.get(f"{API_BASE_URL}/nurses")
+        response = requests.get(f"{API_BASE_URL}/nurse/")
         if response.status_code == 200:
             return response.json()
         return []
@@ -85,7 +85,7 @@ def create_message(subject, content, recipient_type, recipient_id, priority, sen
         }
         
         # Actually call the API
-        response = requests.post(f"{API_BASE_URL}/messages", json=message_data)
+        response = requests.post(f"{API_BASE_URL}/message/", json=message_data)
         
         if response.status_code == 201:
             response_data = response.json()
@@ -96,11 +96,11 @@ def create_message(subject, content, recipient_type, recipient_id, priority, sen
             if message_id:
                 # Link message to recipient based on type
                 if recipient_type == "doctor":
-                    link_response = requests.post(f"{API_BASE_URL}/messages/{message_id}/link_doctor", json={"DoctorID": recipient_id})
+                    link_response = requests.post(f"{API_BASE_URL}/message/{message_id}/link_doctor", json={"DoctorID": recipient_id})
                 elif recipient_type == "nurse":
-                    link_response = requests.post(f"{API_BASE_URL}/messages/{message_id}/link_nurse", json={"NurseID": recipient_id})
+                    link_response = requests.post(f"{API_BASE_URL}/message/{message_id}/link_nurse", json={"NurseID": recipient_id})
                 elif recipient_type == "patient":
-                    link_response = requests.post(f"{API_BASE_URL}/messages/{message_id}/link_patient", json={"PatientID": recipient_id})
+                    link_response = requests.post(f"{API_BASE_URL}/message/{message_id}/link_patient", json={"PatientID": recipient_id})
                 
                 if link_response.status_code == 200:
                     return True
@@ -117,7 +117,7 @@ def create_message(subject, content, recipient_type, recipient_id, priority, sen
 def get_messages(proxy_id):
     """Get messages for specific proxy"""
     try:
-        response = requests.get(f"{API_BASE_URL}/messages?user_type=proxy&user_id={proxy_id}")
+        response = requests.get(f"{API_BASE_URL}/message/?user_type=proxy&user_id={proxy_id}")
         if response.status_code == 200:
             return response.json()
         return []

@@ -9,7 +9,7 @@ patients = Blueprint("patients", __name__)
 
 # Get all patients accessible to the user
 # Available to Doctor-1.1 and Nurse-2.1
-@patients.route("/patients", methods=["GET"])
+@patients.route("/", methods=["GET"])
 def get_all_patients():
     try:
         current_app.logger.info('Starting get_all_patients request')
@@ -28,7 +28,7 @@ def get_all_patients():
 
 # Get details for a specific patient
 # Available to Doctor-1.1, Nurse-2.5, and Patient-3.4
-@patients.route("/patients/<int:patient_id>", methods=["GET"])
+@patients.route("/<int:patient_id>", methods=["GET"])
 def get_patient(patient_id):
     try:
         cursor = db.get_db().cursor()
@@ -47,7 +47,7 @@ def get_patient(patient_id):
 
 # Update patient information (link DischargeID or ConditionID)
 # Available to Doctor-1.4
-@patients.route("/patients/<int:patient_id>", methods=["PUT"])
+@patients.route("/<int:patient_id>", methods=["PUT"])
 def update_patient(patient_id):
     try:
         data = request.get_json()
@@ -85,7 +85,7 @@ def update_patient(patient_id):
 
 # Get medications associated with a patient (via Patient_Medications join)
 # Available to Patient-3.5 and Proxy-4.4
-@patients.route("/patients/<int:patient_id>/medications", methods=["GET"])
+@patients.route("/<int:patient_id>/medications", methods=["GET"])
 def get_patient_medications(patient_id):
     try:
         cursor = db.get_db().cursor()
@@ -114,7 +114,7 @@ def get_patient_medications(patient_id):
 
 # Get proxy information if one exists for the patient
 # Available to Proxy-4.1
-@patients.route("/patients/<int:patient_id>/proxy", methods=["GET"])
+@patients.route("/<int:patient_id>/proxy", methods=["GET"])
 def get_patient_proxy(patient_id):
     try:
         cursor = db.get_db().cursor()
@@ -136,7 +136,7 @@ def get_patient_proxy(patient_id):
 
 # Get patient's current visit (using Patient.VisitID as FK)
 # Available to Patient-3.6 and Proxy-4.2
-@patients.route("/patients/<int:patient_id>/visit", methods=["GET"])
+@patients.route("/<int:patient_id>/visit", methods=["GET"])
 def get_patient_visit(patient_id):
     try:
         cursor = db.get_db().cursor()
@@ -166,7 +166,7 @@ def get_patient_visit(patient_id):
 
 # Get patient's current vitals (via Patient.VitalID FK)
 # Available to Doctor-1.2 and Nurse-2.1
-@patients.route("/patients/<int:patient_id>/vitals", methods=["GET"])
+@patients.route("/<int:patient_id>/vitals", methods=["GET"])
 def get_patient_vitals(patient_id):
     try:
         cursor = db.get_db().cursor()
@@ -226,7 +226,7 @@ def get_patient_condition(patient_id):
 
 # Get patient's discharge (via Patient.DischargeID FK)
 # Available to Patient-3.2 and Proxy-4.5
-@patients.route("/patients/<int:patient_id>/discharge", methods=["GET"])
+@patients.route("/<int:patient_id>/discharge", methods=["GET"])
 def get_patient_discharge(patient_id):
     try:
         cursor = db.get_db().cursor()
@@ -256,7 +256,7 @@ def get_patient_discharge(patient_id):
 
 # Get patient's doctor (via Patient.DoctorID FK)
 # Available to Patient-3.4 and Proxy-4.6
-@patients.route("/patients/<int:patient_id>/doctor", methods=["GET"])
+@patients.route("/<int:patient_id>/doctor", methods=["GET"])
 def get_patient_doctor(patient_id):
     try:
         cursor = db.get_db().cursor()
@@ -286,7 +286,7 @@ def get_patient_doctor(patient_id):
 
 # Get patient's nurse (via Patient.NurseID FK)
 # Available to Proxy-4.6
-@patients.route("/patients/<int:patient_id>/nurse", methods=["GET"])
+@patients.route("/<int:patient_id>/nurse", methods=["GET"])
 def get_patient_nurse(patient_id):
     try:
         cursor = db.get_db().cursor()
@@ -315,7 +315,7 @@ def get_patient_nurse(patient_id):
 
 
 # Get patient's insurance (via Patient.InsuranceID FK)
-@patients.route("/patients/<int:patient_id>/insurance", methods=["GET"])
+@patients.route("/<int:patient_id>/insurance", methods=["GET"])
 def get_patient_insurance(patient_id):
     try:
         cursor = db.get_db().cursor()
