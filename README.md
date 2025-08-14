@@ -168,7 +168,7 @@ docker-compose -f sandbox.yaml down
 ```
 
 ### **Production Deployment**
-```bash
+     ```bash
 # Build and deploy
 docker-compose up -d
 
