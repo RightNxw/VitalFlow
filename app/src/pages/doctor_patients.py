@@ -190,6 +190,41 @@ def show_patient_list():
     else:
         filtered_patients = patients
     
+    # Sort patients based on selected criteria
+    if sort_by == "Name":
+        filtered_patients.sort(key=lambda x: f"{x.get('FirstName', '')} {x.get('LastName', '')}")
+    elif sort_by == "DOB":
+        filtered_patients.sort(key=lambda x: x.get('DOB', ''), reverse=True)  # Most recent first
+    elif sort_by == "Recent Visit":
+        # Production-ready: Fetch actual visit data and sort by visit dates
+        try:
+            # Get all visits to find the most recent visit for each patient
+            visits_response = requests.get(f"{API_BASE_URL}/visit/")
+            if visits_response.status_code == 200:
+                all_visits = visits_response.json()
+                
+                # Create a mapping of patient_id to their most recent visit date
+                patient_last_visit = {}
+                for visit in all_visits:
+                    patient_id = visit.get('PatientID')
+                    visit_date = visit.get('VisitDate') or visit.get('CreatedAt') or visit.get('Timestamp')
+                    if patient_id and visit_date:
+                        if patient_id not in patient_last_visit or visit_date > patient_last_visit[patient_id]:
+                            patient_last_visit[patient_id] = visit_date
+                
+                # Sort patients by their most recent visit date
+                filtered_patients.sort(
+                    key=lambda x: patient_last_visit.get(x.get('PatientID'), '1900-01-01'),
+                    reverse=True  # Most recent visits first
+                )
+            else:
+                # Fallback to PatientID if visits API fails
+                filtered_patients.sort(key=lambda x: x.get('PatientID', 0), reverse=True)
+        except Exception as e:
+            # Log error and fallback to PatientID sorting
+            st.warning(f"Could not fetch visit data for sorting: {str(e)}")
+            filtered_patients.sort(key=lambda x: x.get('PatientID', 0), reverse=True)
+    
     # Display patient data
     if filtered_patients:
         st.markdown(f"### Showing {len(filtered_patients)} patients")
