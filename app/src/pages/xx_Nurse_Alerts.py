@@ -6,7 +6,7 @@ import requests
 import streamlit as st
 
 from modules.nav import SideBarLinks
-from modules.styles import apply_page_styling, create_alert_card, create_medical_divider
+from modules.styles import apply_page_styling, create_metric_card, create_medical_divider
 
 ## Apply medical theme and styling
 apply_page_styling()
@@ -95,19 +95,16 @@ st.markdown("""
     </p>
 </div>
 """, unsafe_allow_html=True)
-<<<<<<< Updated upstream
-=======
 
 # Controls row
 ctrl_l, ctrl_r = st.columns([3, 1])
 with ctrl_l:
     auto_refresh = st.checkbox("Auto refresh", value=False)
-    refresh = st.button("Refresh")
+    refresh = st.button("🔄 Refresh", type="primary", use_container_width=True)
 with ctrl_r:
     nurse_id = st.number_input(
         "NurseID", min_value=1, step=1, value=int(DEFAULT_NURSE_ID)
     )
->>>>>>> Stashed changes
 
 # Load data
 alerts = list_alerts(DEFAULT_NURSE_ID)
@@ -118,23 +115,18 @@ if not df.empty:
     if "UrgencyLevel" in df.columns:
         df = df.sort_values(by=["UrgencyLevel", "SentTime"], ascending=[False, False])
 
+# Dashboard metrics
 metric_1, metric_2, metric_3 = st.columns(3)
-metric_1.metric("Total alerts", len(df) if not df.empty else 0)
-metric_2.metric(
-    "High urgency (≥4)",
-    int((df["UrgencyLevel"] >= 4).sum()) if not df.empty and "UrgencyLevel" in df.columns else 0,
-)
-metric_3.metric(
-    "Last alert",
-    "-" if df.empty or "SentTime" not in df.columns else df["SentTime"].max().strftime("%Y-%m-%d %H:%M"),
-)
+metric_1.markdown(create_metric_card("Total Alerts", len(df) if not df.empty else 0, "📊"), unsafe_allow_html=True)
+metric_2.markdown(create_metric_card("High Urgency (≥4)", int((df["UrgencyLevel"] >= 4).sum()) if not df.empty and "UrgencyLevel" in df.columns else 0, "⚠️"), unsafe_allow_html=True)
+metric_3.markdown(create_metric_card("Last Alert", "-" if df.empty or "SentTime" not in df.columns else df["SentTime"].max().strftime("%Y-%m-%d %H:%M"), "🕐"), unsafe_allow_html=True)
 
-st.divider()
+st.markdown(create_medical_divider(), unsafe_allow_html=True)
 
 left, right = st.columns([2, 1])
 
 with left:
-    st.subheader("Live Feed")
+    st.markdown("### 📊 Live Feed")
     f1, f2 = st.columns([3, 1])
     query = f1.text_input("Search")
     urgency = f2.selectbox("Urgency", ["All", "5", "4", "3", "2", "1"], index=0)
@@ -159,22 +151,22 @@ with left:
     selected_id = st.text_input("Select AlertID", value=str(sel_default))
     c1, c2 = st.columns(2)
     with c1:
-        if st.button("View") and int(selected_id) > 0:
+        if st.button("View", use_container_width=True, type="primary") and int(selected_id) > 0:
             st.session_state["selected_alert_id"] = int(selected_id)
             st.rerun()
     with c2:
-        if st.button("Acknowledge", type="primary", disabled=(int(selected_id) <= 0)):
+        if st.button("Acknowledge", type="primary", use_container_width=True, disabled=(int(selected_id) <= 0)):
             if ack_alert(int(selected_id), DEFAULT_NURSE_ID):
                 st.success("Acknowledged")
                 st.rerun()
 
 with right:
-    st.subheader("Create Alert")
+    st.markdown("### ✨ Create Alert")
     with st.form("create_alert"):
-        msg = st.text_area("Message")
-        urg_val = st.slider("UrgencyLevel", 1, 5, 3)
-        proto = st.text_area("Protocol", "")
-        submit = st.form_submit_button("Create")
+        msg = st.text_area("Message", placeholder="Enter alert message...")
+        urg_val = st.slider("Urgency Level", 1, 5, 3)
+        proto = st.text_area("Protocol", placeholder="Enter protocol instructions...")
+        submit = st.form_submit_button("Create Alert", type="primary", use_container_width=True)
         if submit:
             if not msg.strip():
                 st.error("Message required")
@@ -189,29 +181,39 @@ with right:
                     "Protocol": proto.strip(),
                 })
                 if res is not None:
-                    st.success("Alert created")
+                    st.success("Alert created successfully!")
                     st.rerun()
 
-st.divider()
+st.markdown(create_medical_divider(), unsafe_allow_html=True)
 
-st.subheader("Selected Alert")
+st.markdown("### 📋 Selected Alert Details")
 sel_alert_id = st.session_state.get("selected_alert_id", 0)
 if sel_alert_id:
     detail = get_alert(int(sel_alert_id))
     if detail:
         left_col, right_col = st.columns([1, 1])
         with left_col:
-            st.write(f"AlertID: {detail.get('AlertID', '-')}")
-            st.write(f"Urgency: {detail.get('UrgencyLevel', '-')}")
-            st.write(f"Sent: {detail.get('SentTime', '-')}")
-            st.write(f"PostedBy: {detail.get('PostedBy', '-')}")
-            st.write(f"Role: {detail.get('PostedByRole', '-')}")
+            st.markdown(f"""
+            <div class="medical-card">
+                <strong>Alert ID:</strong> {detail.get('AlertID', '-')}<br>
+                <strong>Urgency:</strong> {detail.get('UrgencyLevel', '-')}<br>
+                <strong>Sent:</strong> {detail.get('SentTime', '-')}<br>
+                <strong>Posted By:</strong> {detail.get('PostedBy', '-')}<br>
+                <strong>Role:</strong> {detail.get('PostedByRole', '-')}
+            </div>
+            """, unsafe_allow_html=True)
         with right_col:
-            st.write("Message:")
-            st.info(detail.get("Message", "-"))
-            st.write("Protocol:")
-            st.code(detail.get("Protocol", "-"))
+            st.markdown(f"""
+            <div class="medical-card">
+                <strong>Message:</strong><br>
+                {detail.get('Message', '-')}<br><br>
+                <strong>Protocol:</strong><br>
+                {detail.get('Protocol', '-')}
+            </div>
+            """, unsafe_allow_html=True)
+    else:
+        st.error("Could not load alert details")
 else:
-    st.caption("No alert selected. Choose one from the table above.")
+    st.info("Select an alert in the table above to view details")
 
 
