@@ -14,12 +14,7 @@ from modules.nav import SideBarLinks
 SideBarLinks()
 
 ## Page config
-st.set_page_config(
-    page_title="Doctor Portal - Patients",
-    page_icon="👥",
-    layout="wide",
-    initial_sidebar_state="expanded",
-)
+
 
 ## App state for navigation
 if "selected_patient" not in st.session_state:

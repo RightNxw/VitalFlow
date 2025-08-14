@@ -12,12 +12,7 @@ from modules.nav import SideBarLinks
 SideBarLinks()
  
 ## Page config
-st.set_page_config(
-    page_title="Doctor Portal - Alerts",
-    page_icon="⚠️",
-    layout="wide",
-    initial_sidebar_state="expanded",
-)
+
  
 st.write("# Patient Alerts")
 st.write("View and manage patient alerts.")

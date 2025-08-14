@@ -14,14 +14,7 @@ from modules.nav import SideBarLinks
 ## Add logo and navigation
 SideBarLinks()
  
-## Page config
-st.set_page_config(
-    page_title="Doctor Portal",
-    page_icon="🩺",
-    layout="wide",
-    initial_sidebar_state="expanded",
-)
- 
+
 st.write("# Doctor Portal")
 st.write("Manage patients, view alerts, and access medical records.")
  

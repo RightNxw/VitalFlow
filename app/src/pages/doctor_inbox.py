@@ -14,12 +14,7 @@ from modules.nav import SideBarLinks
 SideBarLinks()
  
 # Page config
-st.set_page_config(
-    page_title="Doctor Portal - Inbox",
-    page_icon="📥",
-    layout="wide",
-    initial_sidebar_state="expanded",
-)
+
  
 st.write("# Messages & Communications")
 st.write("View and manage your messages.")
