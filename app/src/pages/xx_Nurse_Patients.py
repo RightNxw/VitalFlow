@@ -8,6 +8,12 @@ import streamlit as st
 from modules.nav import SideBarLinks
 from modules.styles import apply_page_styling, create_metric_card, create_patient_card, create_medical_divider
 
+<<<<<<< Updated upstream
+=======
+
+from modules.styles import apply_page_styling, create_metric_card, create_patient_card, create_medical_divider
+
+>>>>>>> Stashed changes
 ## Apply medical theme and styling
 apply_page_styling()
 
@@ -74,6 +80,7 @@ def get_patient_condition(pid: int):
         return None
 
 
+<<<<<<< Updated upstream
 def get_patient_medications(pid: int):
     try:
         r = requests.get(f"{API_BASE}/patient/{pid}/medications", timeout=10)
@@ -84,6 +91,8 @@ def get_patient_medications(pid: int):
         return None
 
 
+=======
+>>>>>>> Stashed changes
 # Medical-themed header
 st.markdown("""
 <div style="text-align: center; margin-bottom: 2rem;">
@@ -152,7 +161,10 @@ with left:
             with col2:
                 if st.button(f"💊 View Meds", key=f"meds_{patient_dict.get('PatientID')}", use_container_width=True, type="primary"):
                     st.session_state["selected_patient_id"] = int(patient_dict.get('PatientID', 0))
+<<<<<<< Updated upstream
                     st.session_state["show_medications"] = True
+=======
+>>>>>>> Stashed changes
                     st.rerun()
             
             # Add medical divider between patients
@@ -197,12 +209,15 @@ with right:
             ), unsafe_allow_html=True)
         
         if v:
+<<<<<<< Updated upstream
             # Handle vitals data - it might be a list or dict
             if isinstance(v, list) and len(v) > 0:
                 v = v[0]  # Take the first vitals record
             elif not isinstance(v, dict):
                 v = {}
                 
+=======
+>>>>>>> Stashed changes
             st.markdown("""
             <div class="medical-card" style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); margin-top: 1rem;">
                 <h4 style="color: var(--accent-green); margin-bottom: 1rem;">💓 Vitals</h4>
@@ -219,12 +234,15 @@ with right:
             ), unsafe_allow_html=True)
         
         if c:
+<<<<<<< Updated upstream
             # Handle condition data - it might be a list or dict
             if isinstance(c, list) and len(c) > 0:
                 c = c[0]  # Take the first condition record
             elif not isinstance(c, dict):
                 c = {}
                 
+=======
+>>>>>>> Stashed changes
             st.markdown("""
             <div class="medical-card" style="background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); margin-top: 1rem;">
                 <h4 style="color: var(--accent-orange); margin-bottom: 1rem;">🏥 Condition</h4>
@@ -235,6 +253,7 @@ with right:
                 desc=c.get("Description", "-"),
                 treatment=c.get("Treatment", "-")
             ), unsafe_allow_html=True)
+<<<<<<< Updated upstream
         
         # Add medications section
         m = get_patient_medications(int(pid))
@@ -259,6 +278,8 @@ with right:
                 frequency=f"{m.get('FrequencyAmount', '')} {m.get('FrequencyPeriod', '')}",
                 refills=m.get('RefillsLeft', '-')
             ), unsafe_allow_html=True)
+=======
+>>>>>>> Stashed changes
     else:
         st.markdown("""
         <div class="medical-card" style="text-align: center; background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);">
@@ -266,6 +287,7 @@ with right:
             <p style="color: var(--gray-600); margin: 0;">Choose a patient from the list to view details</p>
         </div>
         """, unsafe_allow_html=True)
+<<<<<<< Updated upstream
 
 # Add medications view section
 if st.session_state.get("show_medications", False) and st.session_state.get("selected_patient_id", 0):
@@ -328,5 +350,7 @@ if st.session_state.get("show_medications", False) and st.session_state.get("sel
     if st.button("← Back to Patient List", type="primary", use_container_width=True):
         st.session_state["show_medications"] = False
         st.rerun()
+=======
+>>>>>>> Stashed changes
 
 

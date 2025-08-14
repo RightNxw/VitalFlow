@@ -9,7 +9,11 @@ import pandas as pd
 from datetime import datetime
 from streamlit_extras.app_logo import add_logo
 from modules.nav import SideBarLinks
+<<<<<<< Updated upstream
 from modules.styles import apply_page_styling, create_metric_card, create_medical_divider
+=======
+from modules.styles import apply_page_styling, create_alert_card, create_medical_divider
+>>>>>>> Stashed changes
 
 ## Apply medical theme and styling
 apply_page_styling()
@@ -32,9 +36,12 @@ st.markdown("""
 ## API configuration
 API_BASE_URL = "http://web-api:4000"
 
+<<<<<<< Updated upstream
 ## Constants
 DEFAULT_DOCTOR_ID = 1
 
+=======
+>>>>>>> Stashed changes
 ## API functions
 def get_alerts(doctor_id):
     """Get alerts for specific doctor"""
@@ -57,6 +64,7 @@ def get_alerts(doctor_id):
             }
         ]
 
+<<<<<<< Updated upstream
 def ack_alert(alert_id, doctor_id):
     """Acknowledge an alert"""
     try:
@@ -84,11 +92,14 @@ def get_alert(alert_id):
     except:
         return None
 
+=======
+>>>>>>> Stashed changes
 ## Get alerts for current doctor
 doctor_id = st.session_state.get('current_doctor_id', DEFAULT_DOCTOR_ID)
 
 # Load data
 alerts = get_alerts(doctor_id)
+<<<<<<< Updated upstream
 df = pd.DataFrame(alerts)
 if not df.empty:
     if "SentTime" in df.columns:
@@ -197,4 +208,48 @@ if sel_alert_id:
         st.error("Could not load alert details")
 else:
     st.info("Select an alert in the table above to view details")
+=======
+
+if not alerts:
+    st.info("No active alerts at this time.")
+    st.stop()
+
+##  Display alerts
+for alert in alerts:
+    # Get urgency level with color coding
+    urgency = alert.get('UrgencyLevel', 1)
+    urgency_text = f"Level {urgency}"
+    urgency_color = "🔴" if urgency >= 4 else "🟡" if urgency >= 2 else "🟢"
+    
+    # Use the new alert card component
+    # Create a detailed description with all alert information
+    description = f"""
+    <strong>Message:</strong> {alert.get('Message', 'No message')}<br>
+    <strong>Protocol:</strong> {alert.get('Protocol', 'No protocol')}<br>
+    <strong>Posted By:</strong> {alert.get('PostedByRole', 'Unknown')} (ID: {alert.get('PostedBy', 'N/A')})<br>
+    <strong>Sent Time:</strong> {alert.get('SentTime', 'N/A')}
+    """
+    
+    # Determine severity class based on urgency level
+    severity_map = {5: "critical", 4: "critical", 3: "warning", 2: "warning", 1: "info"}
+    severity = severity_map.get(urgency, "info")
+    
+    st.markdown(create_alert_card(
+        title=f"{urgency_color} Alert #{alert.get('AlertID', 'N/A')} - {urgency_text}",
+        description=description,
+        severity=severity,
+        timestamp=alert.get('SentTime', 'N/A')
+    ), unsafe_allow_html=True)
+    
+    # Add action buttons below the card
+    col1, col2 = st.columns([1, 1])
+    with col1:
+        if st.button("✅ Acknowledge", key=f"ack_{alert.get('AlertID')}", use_container_width=True, type="primary"):
+            st.success("Alert acknowledged!")
+    with col2:
+        pass  # Removed View Details button
+    
+    # Add medical divider between alerts
+    st.markdown(create_medical_divider(), unsafe_allow_html=True)
+>>>>>>> Stashed changes
  

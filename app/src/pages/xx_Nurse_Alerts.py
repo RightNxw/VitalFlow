@@ -95,6 +95,19 @@ st.markdown("""
     </p>
 </div>
 """, unsafe_allow_html=True)
+<<<<<<< Updated upstream
+=======
+
+# Controls row
+ctrl_l, ctrl_r = st.columns([3, 1])
+with ctrl_l:
+    auto_refresh = st.checkbox("Auto refresh", value=False)
+    refresh = st.button("Refresh")
+with ctrl_r:
+    nurse_id = st.number_input(
+        "NurseID", min_value=1, step=1, value=int(DEFAULT_NURSE_ID)
+    )
+>>>>>>> Stashed changes
 
 # Load data
 alerts = list_alerts(DEFAULT_NURSE_ID)
