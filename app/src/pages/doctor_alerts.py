@@ -36,10 +36,10 @@ API_BASE_URL = "http://web-api:4000"
 DEFAULT_DOCTOR_ID = 1
 
 ## API functions
-def get_alerts(doctor_id):
-    """Get alerts for specific doctor"""
+def get_alerts():
+    """Get all alerts - doctors and nurses see the same alerts"""
     try:
-        response = requests.get(f"{API_BASE_URL}/alert/?user_type=doctor&user_id={doctor_id}")
+        response = requests.get(f"{API_BASE_URL}/alert/")
         if response.status_code == 200:
             return response.json()
         return []
@@ -66,13 +66,7 @@ def ack_alert(alert_id, doctor_id):
     except:
         return False
 
-def create_alert(alert_data):
-    """Create a new alert"""
-    try:
-        response = requests.post(f"{API_BASE_URL}/alert/", json=alert_data)
-        return response.status_code == 201
-    except:
-        return False
+
 
 def get_alert(alert_id):
     """Get specific alert details"""
@@ -106,7 +100,7 @@ def delete_alert(alert_id):
 doctor_id = st.session_state.get('current_doctor_id', DEFAULT_DOCTOR_ID)
 
 # Load data
-alerts = get_alerts(doctor_id)
+alerts = get_alerts()
 
 if not alerts:
     st.info("No active alerts at this time.")
@@ -167,29 +161,7 @@ with left:
             else:
                 st.error("Failed to delete alert")
 
-with right:
-    st.markdown("### ✨ Create Alert")
-    with st.form("create_alert"):
-        msg = st.text_area("Message", placeholder="Enter alert message...")
-        urg_val = st.slider("Urgency Level", 1, 5, 3)
-        proto = st.text_area("Protocol", placeholder="Enter protocol instructions...")
-        submit = st.form_submit_button("Create Alert", type="primary", use_container_width=True)
-        if submit:
-            if not msg.strip():
-                st.error("Message required")
-            else:
-                now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                res = create_alert({
-                    "Message": msg.strip(),
-                    "SentTime": now_str,
-                    "PostedBy": int(doctor_id),
-                    "PostedByRole": "Doctor",  # Hardcoded since we know it's a doctor
-                    "UrgencyLevel": int(urg_val),
-                    "Protocol": proto.strip(),
-                })
-                if res is not None:
-                    st.success("Alert created successfully!")
-                    st.rerun()
+
 
 st.markdown(create_medical_divider(), unsafe_allow_html=True)
 

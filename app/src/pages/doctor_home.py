@@ -247,10 +247,10 @@ def get_conditions():
         st.warning("Could not connect to conditions API, using dummy data.")
         return [{"ConditionID": 1, "PatientID": 1, "Condition": "Hypertension", "Severity": "Mild"}]
  
-def get_alerts(doctor_id):
-    """Get alerts for specific doctor"""
+def get_alerts():
+    """Get all alerts - doctors and nurses see the same alerts"""
     try:
-        response = requests.get(f"{API_BASE_URL}/alert/?user_type=doctor&user_id={doctor_id}")
+        response = requests.get(f"{API_BASE_URL}/alert/")
         if response.status_code == 200:
             return response.json()
         return []

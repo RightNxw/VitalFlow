@@ -101,11 +101,11 @@ def create_message(subject, content, recipient_type, recipient_id, priority, sen
             if message_id:
                 # Link message to recipient based on type
                 if recipient_type == "doctor":
-                    link_response = requests.post(f"{API_BASE_URL}/message/{message_id}/link_doctor", json={"DoctorID": recipient_id})
+                    link_response = requests.post(f"{API_BASE_URL}/message/messages/{message_id}/link_doctor", json={"DoctorID": recipient_id})
                 elif recipient_type == "nurse":
-                    link_response = requests.post(f"{API_BASE_URL}/message/{message_id}/link_nurse", json={"NurseID": recipient_id})
+                    link_response = requests.post(f"{API_BASE_URL}/message/messages/{message_id}/link_nurse", json={"NurseID": recipient_id})
                 elif recipient_type == "patient":
-                    link_response = requests.post(f"{API_BASE_URL}/message/{message_id}/link_patient", json={"PatientID": recipient_id})
+                    link_response = requests.post(f"{API_BASE_URL}/message/messages/{message_id}/link_patient", json={"PatientID": recipient_id})
                 
                 if link_response.status_code == 200:
                     return True
@@ -179,11 +179,16 @@ st.markdown("---")
 ## Get messages for current nurse
 messages = get_messages(nurse_id)
 
-# Display success message if exists (moved to top)
+# Display success messages if they exist (moved to top)
 if 'delete_success' in st.session_state:
     st.success(st.session_state['delete_success'])
     # Clear the message after displaying
     del st.session_state['delete_success']
+
+if 'message_sent_success' in st.session_state:
+    st.success("✅ Message sent successfully!")
+    # Clear the message after displaying
+    del st.session_state['message_sent_success']
 
 # Create two columns for inbox and compose
 col1, col2 = st.columns([1.5, 1])  # Give compose section more space
@@ -279,17 +284,15 @@ with col2:
     
     # Handle form submission outside the form
     if submitted:
-        # Get form data from session state
-        subject = st.session_state.get("subject_input", "")
-        content = st.session_state.get("content_input", "")
-        priority = st.session_state.get("priority_input", "Normal")
-        
         if subject and content and recipient_id:
-            st.success("✅ Message sent successfully!")
-            
             # Call create_message function
-            create_message(subject, content, st.session_state.recipient_type, recipient_id, priority, nurse_id, "Nurse")
-            
+            if create_message(subject, content, st.session_state.recipient_type, recipient_id, priority, nurse_id, "Nurse"):
+                # Store success message in session state
+                st.session_state['message_sent_success'] = True
+                # Rerun to refresh the page and clear form
+                st.rerun()
+            else:
+                st.error("❌ Failed to send message. Please try again.")
         else:
             st.warning("Please fill in all required fields.")
 

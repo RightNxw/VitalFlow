@@ -111,9 +111,9 @@ def create_message(subject, content, recipient_type, recipient_id, priority, sen
             if message_id:
                 # Link message to recipient based on type
                 if recipient_type == "doctor":
-                    link_response = requests.post(f"{API_BASE_URL}/message/{message_id}/link_doctor", json={"DoctorID": recipient_id})
+                    link_response = requests.post(f"{API_BASE_URL}/message/messages/{message_id}/link_doctor", json={"DoctorID": recipient_id})
                 elif recipient_type == "nurse":
-                    link_response = requests.post(f"{API_BASE_URL}/message/{message_id}/link_nurse", json={"NurseID": recipient_id})
+                    link_response = requests.post(f"{API_BASE_URL}/message/messages/{message_id}/link_nurse", json={"NurseID": recipient_id})
                 
                 if link_response.status_code == 200:
                     return True
@@ -156,11 +156,16 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# Display success message if exists
+# Display success messages if they exist
 if 'delete_success' in st.session_state:
     st.success(st.session_state['delete_success'])
     # Clear the message after displaying
     del st.session_state['delete_success']
+
+if 'message_sent_success' in st.session_state:
+    st.success("✅ Message sent successfully!")
+    # Clear the message after displaying
+    del st.session_state['message_sent_success']
 
 # Get current patient ID from session state
 patient_id = st.session_state.get('current_patient_id', 1)
@@ -253,17 +258,15 @@ with col2:
     
     # Handle form submission outside the form
     if submitted:
-        # Get form data from session state
-        subject = st.session_state.get("subject_input", "")
-        content = st.session_state.get("content_input", "")
-        priority = st.session_state.get("priority_input", "Normal")
-        
         if subject and content and recipient_id:
-            st.success("✅ Message sent successfully!")
-            
             # Call create_message function
-            create_message(subject, content, st.session_state.recipient_type, recipient_id, priority, patient_id, "Patient")
-            
+            if create_message(subject, content, st.session_state.recipient_type, recipient_id, priority, patient_id, "Patient"):
+                # Store success message in session state
+                st.session_state['message_sent_success'] = True
+                # Rerun to refresh the page and clear form
+                st.rerun()
+            else:
+                st.error("❌ Failed to send message. Please try again.")
         else:
             st.warning("Please fill in all required fields.")
 
@@ -289,20 +292,4 @@ with col4:
     urgent_count = sum(1 for msg in messages if msg.get('Priority') == 'Urgent')
     st.metric("Urgent", urgent_count)
 
-# Quick Actions
-st.markdown(create_medical_divider(), unsafe_allow_html=True)
-st.markdown("### ⚡ Quick Actions")
 
-col1, col2, col3 = st.columns(3)
-
-with col1:
-    if st.button("📋 Request Appointment", use_container_width=True):
-        st.info("Appointment request form would open here")
-
-with col2:
-    if st.button("💊 Refill Request", use_container_width=True):
-        st.info("Medication refill request form would open here")
-
-with col3:
-    if st.button("📋 Update Information", use_container_width=True):
-        st.info("Patient information update form would open here")

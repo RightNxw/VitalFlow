@@ -26,9 +26,10 @@ if not API_BASE:
 if DEFAULT_NURSE_ID == 0:
     DEFAULT_NURSE_ID = 1
 
-def get_alerts(nurse_id: int):
+def get_alerts():
+    """Get all alerts - doctors and nurses see the same alerts"""
     try:
-        r = requests.get(f"{API_BASE}/alert/?user_type=nurse&user_id={nurse_id}", timeout=10)
+        r = requests.get(f"{API_BASE}/alert/", timeout=10)
         if r.status_code != 200:
             st.error(f"GET /alert/ → {r.status_code}")
             return []
@@ -59,16 +60,9 @@ def put_alert_ack(alert_id: int, nurse_id: int):
         st.error(f"Acknowledge failed at {API_BASE}. Details: {ex}")
         return False
 
-def post_alert(payload: dict):
-    try:
-        r = requests.post(f"{API_BASE}/alert/", json=payload, timeout=10)
-        if r.status_code not in (200, 201):
-            st.error(f"POST /alert/ → {r.status_code}")
-            return None
-        return r.json()
-    except requests.exceptions.RequestException as ex:
-        st.error(f"Create alert failed at {API_BASE}. Details: {ex}")
-        return None
+
+
+
 
 def delete_alert(alert_id: int):
     """Delete an alert (acknowledge it)"""
@@ -118,7 +112,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Load data
-alerts = get_alerts(DEFAULT_NURSE_ID)
+alerts = get_alerts()
 patients = get_patients()
 
 df_alerts = pd.DataFrame(alerts)
@@ -191,32 +185,11 @@ with lc:
 with rc:
     st.markdown("""
     <div style="margin: 1rem 0;">
-        <h3 style="color: var(--secondary-teal); margin-bottom: 0.5rem;">📝 Create Alert</h3>
-        <p style="color: var(--gray-600); margin: 0;">Generate new patient alerts</p>
+        <h3 style="color: var(--secondary-blue); margin-bottom: 0.5rem;">📊 Alert Statistics</h3>
+        <p style="color: var(--gray-600); margin: 0;">View alert summary and metrics</p>
     </div>
     """, unsafe_allow_html=True)
-    with st.form("create_alert"):
-        msg = st.text_area("Message", "")
-        urg_val = st.slider("UrgencyLevel", 1, 5, 3)
-        proto = st.text_area("Protocol", "")
-        posted_by_id = st.text_input("PostedBy (NurseID)", value=str(DEFAULT_NURSE_ID))
-        submit = st.form_submit_button("Create")
-        if submit:
-            if not msg.strip():
-                st.error("Message required")
-            else:
-                now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                res = post_alert({
-                    "Message": msg.strip(),
-                    "SentTime": now_str,
-                    "PostedBy": int(posted_by_id),
-                    "PostedByRole": "Nurse",  # Hardcoded since we know it's a nurse
-                    "UrgencyLevel": int(urg_val),
-                    "Protocol": proto.strip()
-                })
-                if res is not None:
-                    st.success("Alert created")
-                    st.rerun()
+    # Alert creation functionality removed - nurses create alerts from dedicated Alerts page
 
 # Add medical divider
 st.markdown(create_medical_divider(), unsafe_allow_html=True)

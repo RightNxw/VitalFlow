@@ -29,14 +29,39 @@ if not API_BASE:
     else:
         API_BASE = "http://localhost:4000"
 if DEFAULT_NURSE_ID == 0:
-    DEFAULT_NURSE_ID = 2
+    DEFAULT_NURSE_ID = 1
 
 
-def list_alerts(nurse_id: int):
+def get_nurses():
+    """Get all nurses from API"""
     try:
-        r = requests.get(
-            f"{API_BASE}/alert/?user_type=nurse&user_id={nurse_id}", timeout=10
-        )
+        response = requests.get(f"{API_BASE}/nurse/")
+        if response.status_code == 200:
+            return response.json()
+        return []
+    except:
+        st.warning("Could not connect to nurses API, using dummy data.")
+        return [{"NurseID": 1, "FirstName": "Nic", "LastName": "Nevin"}]
+
+def get_nurse_by_name(first_name, last_name):
+    """Get nurse information by name"""
+    try:
+        response = requests.get(f"{API_BASE}/nurse/")
+        if response.status_code == 200:
+            nurses = response.json()
+            for nurse in nurses:
+                if nurse.get('FirstName') == first_name and nurse.get('LastName') == last_name:
+                    return nurse
+        return None
+    except:
+        st.warning("Could not connect to nurse API, using dummy data.")
+        return {"NurseID": 1, "FirstName": "Nic", "LastName": "Nevin"}
+
+
+def list_alerts():
+    """Get all alerts - doctors and nurses see the same alerts"""
+    try:
+        r = requests.get(f"{API_BASE}/alert/", timeout=10)
         if r.status_code != 200:
             st.error(f"GET /alert/ → {r.status_code}")
             return []
@@ -105,11 +130,16 @@ def delete_alert(alert_id: int):
         return False
 
 
-# Display success message if exists
+# Display success messages if they exist
 if 'delete_success' in st.session_state:
     st.success(st.session_state['delete_success'])
     # Clear the message after displaying
     del st.session_state['delete_success']
+
+if 'alert_created_success' in st.session_state:
+    st.success("✅ Alert created successfully!")
+    # Clear the message after displaying
+    del st.session_state['alert_created_success']
 
 # Medical-themed header
 st.markdown("""
@@ -121,18 +151,38 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
+## Get nurse information
+# Try to get nurse by name first, then fall back to first nurse
+nurse_info = get_nurse_by_name("Nic", "Nevin")
+if nurse_info:
+    nurse_id = nurse_info.get('NurseID', 1)
+    nurse_name = f"{nurse_info.get('FirstName', 'Nic')} {nurse_info.get('LastName', 'Nevin')}"
+else:
+    # Fallback to first nurse if name lookup fails
+    nurses = get_nurses()
+    if nurses:
+        current_nurse = nurses[0]
+        nurse_id = current_nurse.get('NurseID', 1)
+        nurse_name = f"{current_nurse.get('FirstName', 'Nic')} {current_nurse.get('LastName', 'Nevin')}"
+    else:
+        nurse_id = 1
+        nurse_name = "Nic Nevin"
+
+## Welcome message
+st.markdown(f"### Welcome, {nurse_name}")
+
+st.markdown("---")
+
 # Controls row
 ctrl_l, ctrl_r = st.columns([3, 1])
 with ctrl_l:
     auto_refresh = st.checkbox("Auto refresh", value=False)
     refresh = st.button("🔄 Refresh", type="primary", use_container_width=True)
 with ctrl_r:
-    nurse_id = st.number_input(
-        "NurseID", min_value=1, step=1, value=int(DEFAULT_NURSE_ID)
-    )
+    st.markdown("**Nurse ID:** " + str(nurse_id))
 
 # Load data
-alerts = list_alerts(DEFAULT_NURSE_ID)
+alerts = list_alerts()
 df = pd.DataFrame(alerts)
 if not df.empty:
     if "SentTime" in df.columns:
@@ -193,22 +243,32 @@ with right:
         urg_val = st.slider("Urgency Level", 1, 5, 3)
         proto = st.text_area("Protocol", placeholder="Enter protocol instructions...")
         submit = st.form_submit_button("Create Alert", type="primary", use_container_width=True)
-        if submit:
-            if not msg.strip():
-                st.error("Message required")
-            else:
+    
+    # Handle form submission outside the form (like messages do)
+    if submit:
+        if not msg.strip():
+            st.error("Message required")
+        else:
+            try:
                 now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                res = create_alert({
+                alert_data = {
                     "Message": msg.strip(),
                     "SentTime": now_str,
-                    "PostedBy": DEFAULT_NURSE_ID,
-                    "PostedByRole": "Nurse",  # Hardcoded since we know it's a nurse
+                    "PostedBy": nurse_id,
+                    "PostedByRole": "Nurse",
                     "UrgencyLevel": int(urg_val),
                     "Protocol": proto.strip(),
-                })
+                }
+                
+                res = create_alert(alert_data)
+                
                 if res is not None:
-                    st.success("Alert created successfully!")
+                    st.session_state['alert_created_success'] = True
                     st.rerun()
+                else:
+                    st.error("❌ Failed to create alert")
+            except Exception as e:
+                st.error(f"❌ Error creating alert: {str(e)}")
 
 st.markdown(create_medical_divider(), unsafe_allow_html=True)
 

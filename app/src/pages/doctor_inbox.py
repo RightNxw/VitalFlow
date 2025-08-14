@@ -89,34 +89,51 @@ def create_message(subject, content, recipient_type, recipient_id, priority, sen
             "SentTime": datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         }
         
+        st.info(f"Creating message: {message_data}")
+        
         # Actually call the API
         response = requests.post(f"{API_BASE_URL}/message/", json=message_data)
         
+        st.info(f"Message creation response: {response.status_code} - {response.text}")
+        
         if response.status_code == 201:
             response_data = response.json()
+            st.info(f"Response data: {response_data}")
             
             # Get the message ID from response
             message_id = response_data.get('message_id')
             
             if message_id:
-                # Link message to recipient based on type
-                if recipient_type == "doctor":
-                    link_response = requests.post(f"{API_BASE_URL}/message/{message_id}/link_doctor", json={"DoctorID": recipient_id})
-                elif recipient_type == "nurse":
-                    link_response = requests.post(f"{API_BASE_URL}/message/{message_id}/link_nurse", json={"NurseID": recipient_id})
-                elif recipient_type == "patient":
-                    link_response = requests.post(f"{API_BASE_URL}/message/{message_id}/link_patient", json={"PatientID": recipient_id})
+                st.info(f"Message created with ID: {message_id}")
                 
-                if link_response.status_code == 200:
-                    return True
-                else:
+                # Try to link message to recipient based on type
+                try:
+                    if recipient_type == "doctor":
+                        link_response = requests.post(f"{API_BASE_URL}/message/messages/{message_id}/link_doctor", json={"DoctorID": recipient_id})
+                    elif recipient_type == "nurse":
+                        link_response = requests.post(f"{API_BASE_URL}/message/messages/{message_id}/link_nurse", json={"NurseID": recipient_id})
+                    elif recipient_type == "patient":
+                        link_response = requests.post(f"{API_BASE_URL}/message/messages/{message_id}/link_patient", json={"PatientID": recipient_id})
+                    
+                    st.info(f"Link response: {link_response.status_code} - {link_response.text}")
+                    
+                    if link_response.status_code == 200:
+                        return True
+                    else:
+                        st.error(f"Failed to link message: {link_response.status_code}")
+                        return False
+                except Exception as link_error:
+                    st.error(f"Error linking message: {str(link_error)}")
                     return False
             else:
+                st.error("No message ID returned from API")
                 return False
         else:
+            st.error(f"Failed to create message: {response.status_code}")
             return False
         
     except Exception as e:
+        st.error(f"Exception in create_message: {str(e)}")
         return False
 
 def delete_message(message_id):
@@ -141,11 +158,16 @@ def delete_message(message_id):
 doctor_id = st.session_state.get('current_doctor_id', 1)
 messages = get_messages(doctor_id)
 
-# Display success message if exists (moved to top)
+# Display success messages if they exist (moved to top)
 if 'delete_success' in st.session_state:
     st.success(st.session_state['delete_success'])
     # Clear the message after displaying
     del st.session_state['delete_success']
+
+if 'message_sent_success' in st.session_state:
+    st.success("✅ Message sent successfully!")
+    # Clear the message after displaying
+    del st.session_state['message_sent_success']
 
 # Create two columns for inbox and compose
 col1, col2 = st.columns([1.5, 1])  # Give compose section more space
@@ -241,16 +263,14 @@ with col2:
     
     # Handle form submission outside the form
     if submitted:
-        # Get form data from session state
-        subject = st.session_state.get("subject_input", "")
-        content = st.session_state.get("content_input", "")
-        priority = st.session_state.get("priority_input", "Normal")
-        
         if subject and content and recipient_id:
-            st.success("✅ Message sent successfully!")
-            
             # Call create_message function
-            create_message(subject, content, st.session_state.recipient_type, recipient_id, priority, doctor_id, "Doctor")
-            
+            if create_message(subject, content, st.session_state.recipient_type, recipient_id, priority, doctor_id, "Doctor"):
+                # Store success message in session state
+                st.session_state['message_sent_success'] = True
+                # Rerun to refresh the page and clear form
+                st.rerun()
+            else:
+                st.error("❌ Failed to send message. Please try again.")
         else:
             st.warning("Please fill in all required fields.")

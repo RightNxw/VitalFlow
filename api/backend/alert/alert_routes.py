@@ -8,7 +8,7 @@ from datetime import datetime
 alerts = Blueprint("alerts", __name__)
 
 
-# Get alerts for a user (accessible via AlertsDoctors or AlertsNurse)
+# Get all alerts (doctors and nurses see the same alerts)
 # Available to Nurse-2.3 and Proxy-4.1
 @alerts.route("/", methods=["GET"])
 def get_alerts():
@@ -16,36 +16,17 @@ def get_alerts():
         current_app.logger.info('Starting get_alerts request')
         cursor = db.get_db().cursor()
         
-        # Get query parameters for filtering by user type and ID
-        user_type = request.args.get("user_type")  # "doctor" or "nurse"
-        user_id = request.args.get("user_id")
+        # Get all alerts - no filtering by user type
+        query = """
+        SELECT * FROM AlertDetails 
+        ORDER BY SentTime DESC
+        """
         
-        if not user_type or not user_id:
-            return jsonify({"error": "user_type and user_id parameters are required"}), 400
-        
-        # Get alerts based on user type
-        if user_type == "doctor":
-            query = """
-            SELECT ad.* FROM AlertDetails ad
-            JOIN AlertsDoctors ald ON ad.AlertID = ald.AlertID
-            WHERE ald.DoctorID = %s
-            ORDER BY ad.SentTime DESC
-            """
-        elif user_type == "nurse":
-            query = """
-            SELECT ad.* FROM AlertDetails ad
-            JOIN AlertsNurse aln ON ad.AlertID = aln.AlertID
-            WHERE aln.NurseID = %s
-            ORDER BY ad.SentTime DESC
-            """
-        else:
-            return jsonify({"error": "Invalid user_type. Must be 'doctor' or 'nurse'"}), 400
-        
-        cursor.execute(query, (user_id,))
+        cursor.execute(query)
         alerts_data = cursor.fetchall()
         cursor.close()
         
-        current_app.logger.info(f'Successfully retrieved {len(alerts_data)} alerts for {user_type} {user_id}')
+        current_app.logger.info(f'Successfully retrieved {len(alerts_data)} alerts')
         return jsonify(alerts_data), 200
     except Error as e:
         current_app.logger.error(f'Database error in get_alerts: {str(e)}')

@@ -295,9 +295,9 @@ def create_message(subject, content, recipient_type, recipient_id, priority, sen
             if message_id:
                 # Link message to recipient based on type
                 if recipient_type == "doctor":
-                    link_response = requests.post(f"{API_BASE_URL}/message/{message_id}/link_doctor", json={"DoctorID": recipient_id})
+                    link_response = requests.post(f"{API_BASE_URL}/message/messages/{message_id}/link_doctor", json={"DoctorID": recipient_id})
                 elif recipient_type == "nurse":
-                    link_response = requests.post(f"{API_BASE_URL}/message/{message_id}/link_nurse", json={"NurseID": recipient_id})
+                    link_response = requests.post(f"{API_BASE_URL}/message/messages/{message_id}/link_nurse", json={"NurseID": recipient_id})
                 
                 if link_response.status_code == 200:
                     return True
@@ -704,17 +704,14 @@ def show_patient_inbox():
         
         # Handle form submission outside the form
         if submitted:
-            # Get form data from session state
-            subject = st.session_state.get("subject_input", "")
-            content = st.session_state.get("content_input", "")
-            priority = st.session_state.get("priority_input", "Normal")
-            
             if subject and content and recipient_id:
-                st.success("✅ Message sent successfully!")
-                
                 # Call create_message function
-                create_message(subject, content, st.session_state.recipient_type, recipient_id, priority, patient_id, "Patient")
-                
+                if create_message(subject, content, st.session_state.recipient_type, recipient_id, priority, patient_id, "Patient"):
+                    st.success("✅ Message sent successfully!")
+                    # Rerun to refresh the page and clear form
+                    st.rerun()
+                else:
+                    st.error("❌ Failed to send message. Please try again.")
             else:
                 st.warning("Please fill in all required fields.")
 
