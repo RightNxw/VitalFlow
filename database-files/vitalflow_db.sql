@@ -241,7 +241,7 @@ INSERT INTO Doctor (FirstName, LastName, Specialty, YearOfExperience) VALUES
 
 -- STRONG ENTITY: Nurse (32 rows)
 INSERT INTO Nurse (FirstName, LastName) VALUES
-('Patricia', 'Jones'),
+('Nic', 'Nevin'),
 ('Kevin', 'Taylor'),
 ('Susan', 'Moore'),
 ('Brian', 'Jackson'),
@@ -357,7 +357,7 @@ INSERT INTO Medication (PrescriptionName, DosageAmount, DosageUnit, PickUpLocati
 
 -- WEAK ENTITY: Visits (60 rows)
 INSERT INTO Visits (AdmitReason, AppointmentDate, NextVisitDate) VALUES
-('Annual physical examination', '2024-01-15', '2025-01-15'),
+('Concussion symptoms', '2024-01-15', '2025-01-15'),
 ('Chest pain and shortness of breath', '2024-02-20', '2024-03-20'),
 ('Pediatric wellness check', '2024-03-10', '2024-09-10'),
 ('Emergency - fractured ankle', '2024-03-25', '2024-04-08'),
@@ -610,7 +610,7 @@ INSERT INTO Discharge (DischargeDate, Instructions) VALUES
 
 -- STRONG ENTITY: Patient (40 rows)
 INSERT INTO Patient (FirstName, LastName, DOB, Weight, BloodType, PreExisting, InsuranceID, DischargeID, ConditionID, DoctorID, NurseID, VitalID, VisitID) VALUES
-('John', 'Smith', '1980-05-15', 180.5, 'O+', FALSE, 1, 1, 1, 1, 1, 1, 1),
+('Joe', 'Pesci', '1980-05-15', 180.5, 'O+', FALSE, 1, 10, 31, 1, 1, 1, 1),
 ('Mary', 'Johnson', '1975-08-22', 165.0, 'A+', TRUE, 2, 2, 2, 2, 2, 2, 2),
 ('Robert', 'Williams', '1992-03-18', 190.0, 'B+', FALSE, 3, 3, 3, 3, 3, 3, 3),
 ('Patricia', 'Brown', '1988-11-30', 145.5, 'AB+', TRUE, 4, 4, 4, 4, 4, 4, 4),
@@ -653,7 +653,7 @@ INSERT INTO Patient (FirstName, LastName, DOB, Weight, BloodType, PreExisting, I
 
 -- WEAK ENTITY: Proxy (55 rows)
 INSERT INTO Proxy (PatientID, FirstName, LastName, Relationship) VALUES
-(1, 'Jane', 'Smith', 'Spouse'),
+(1, 'Nina', 'Pesci', 'Daughter'),
 (1, 'Tom', 'Smith', 'Son'),
 (2, 'Robert', 'Johnson', 'Spouse'),
 (3, 'Linda', 'Williams', 'Mother'),
