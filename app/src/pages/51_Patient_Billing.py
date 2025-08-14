@@ -6,7 +6,7 @@ import streamlit as st
 import requests
 from datetime import datetime
 from streamlit_extras.app_logo import add_logo
-from modules.nav import PatientNav
+from modules.nav import SideBarLinks
 
 ## Page config - MUST be first Streamlit command
 st.set_page_config(
@@ -17,7 +17,7 @@ st.set_page_config(
 )
 
 ## Add logo and navigation
-PatientNav()
+SideBarLinks()
 
 ## API configuration
 API_BASE_URL = "http://web-api:4000"
@@ -128,7 +128,7 @@ if insurance_info:
             st.markdown(f"""
             **Provider:** {insurance_info.get('InsuranceProvider', 'N/A')}
             **Policy Number:** {insurance_info.get('PolicyNumber', 'N/A')}
-            **Deductible:** ${insurance_info.get('Deductible', 'N/A'):,.2f}
+            **Deductible:** {insurance_info.get('Deductible', 'N/A')}
             """)
         
         with col2:
@@ -181,7 +181,11 @@ with col1:
         if visit_info and insurance_info:
             st.success(f"Bill generated for visit: {visit_info.get('AdmitReason', 'N/A')}")
             st.info(f"Insurance: {insurance_info.get('InsuranceProvider', 'N/A')}")
-            st.info(f"Deductible remaining: ${insurance_info.get('Deductible', 0):,.2f}")
+            try:
+                deductible = float(insurance_info.get('Deductible', 0))
+                st.info(f"Deductible remaining: ${deductible:,.2f}")
+            except (ValueError, TypeError):
+                st.info(f"Deductible remaining: {insurance_info.get('Deductible', 'N/A')}")
 
 with col2:
     if st.button("📊 View Payment History", use_container_width=True):
@@ -207,6 +211,10 @@ if visit_info:
     
     if insurance_info:
         st.info(f"**Insurance Coverage:** {insurance_info.get('InsuranceProvider', 'N/A')} will cover 80% after deductible")
-        st.info(f"**Your Responsibility:** ${insurance_info.get('Deductible', 0):,.2f} deductible + 20% of remaining costs")
+        try:
+            deductible = float(insurance_info.get('Deductible', 0))
+            st.info(f"**Your Responsibility:** ${deductible:,.2f} deductible + 20% of remaining costs")
+        except (ValueError, TypeError):
+            st.info(f"**Your Responsibility:** {insurance_info.get('Deductible', 'N/A')} deductible + 20% of remaining costs")
 else:
     st.info("No active visit to calculate costs")

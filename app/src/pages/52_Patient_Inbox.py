@@ -6,7 +6,7 @@ import streamlit as st
 import requests
 from datetime import datetime
 from streamlit_extras.app_logo import add_logo
-from modules.nav import PatientNav
+from modules.nav import SideBarLinks
 
 ## Page config - MUST be first Streamlit command
 st.set_page_config(
@@ -17,7 +17,7 @@ st.set_page_config(
 )
 
 ## Add logo and navigation
-PatientNav()
+SideBarLinks()
 
 ## API configuration
 API_BASE_URL = "http://web-api:4000"
