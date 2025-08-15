@@ -5,12 +5,14 @@ A comprehensive healthcare management system built with Streamlit frontend and F
 ## Features
 
 ### **Multi-Persona Access**
-- ** Doctor Portal** - Patient management, medical charts, alerts, and communications
-- ** Nurse Portal** - Patient care, vitals monitoring, and care coordination
-- ** Proxy Portal** - Manage dependent patients, insurance, and billing
-- ** Patient Portal** - Personal health records, medications, and appointments
+
+- **Doctor Portal** - Patient management, medical charts, alerts, and communications
+- **Nurse Portal** - Patient care, vitals monitoring, and care coordination
+- **Proxy Portal** - Manage dependent patients, insurance, and billing
+- **Patient Portal** - Personal health records, medications, and appointments
 
 ### **Core Functionality**
+
 - **Patient Management** - Comprehensive patient records and medical history
 - **Insurance & Billing** - Policy management and deductible tracking
 - **Communication System** - Secure messaging between healthcare teams
@@ -18,9 +20,10 @@ A comprehensive healthcare management system built with Streamlit frontend and F
 - **Alert System** - Medical alerts and notifications
 - **Dashboard Analytics** - Real-time metrics and insights
 
-##  Quick Start
+## Quick Start
 
 ### **Prerequisites**
+
 - Docker and Docker Compose
 - Python 3.8+
 - MySQL database
@@ -28,21 +31,23 @@ A comprehensive healthcare management system built with Streamlit frontend and F
 ### **Installation**
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/yourusername/VitalFlow.git
    cd VitalFlow
    ```
 
-3. **Start the application**
+2. **Start the application**
+
    ```bash
    # Start all services
    docker-compose up -d
-   
+
    # Or use sandbox configuration for testing
    docker-compose -f sandbox.yaml up -d
    ```
 
-4. **Access the application**
+3. **Access the application**
    - **Frontend**: http://localhost:8501
    - **API**: http://localhost:4000
    - **Database**: localhost:3306
@@ -50,50 +55,58 @@ A comprehensive healthcare management system built with Streamlit frontend and F
 ## Architecture
 
 ### **Frontend (Streamlit)**
+
 ```
 app/
 ├── src/
-│   ├── pages/           # Persona-specific pages
-│   │   ├── doctor_home.py      # Doctor dashboard
-│   │   ├── nurse_home.py       # Nurse dashboard
-│   │   ├── proxy_home.py       # Proxy dashboard
-│   │   ├── patient_home.py     # Patient dashboard
-│   │   └── admin_home.py       # Admin dashboard
-│   ├── modules/         # Navigation and utilities
-│   │   └── nav.py              # Role-based navigation
-│   └── assets/          # Images and static files
-│       └── logo.png            # VitalFlow logo
+│   ├── Home.py              # Main entry point and role selection
+│   ├── pages/               # Persona-specific pages
+│   │   ├── doctor_home.py          # Doctor dashboard
+│   │   ├── xx_Nurse_Dashboard.py   # Nurse dashboard
+│   │   ├── proxy_home.py           # Proxy dashboard
+│   │   ├── 50_Patient_Home.py      # Patient dashboard
+│   │   ├── doctor_alerts.py        # Doctor alerts
+│   │   ├── doctor_inbox.py         # Doctor messages
+│   │   ├── doctor_patients.py      # Doctor patient management
+│   │   ├── xx_Nurse_Alerts.py      # Nurse alerts
+│   │   ├── xx_Nurse_Patients.py    # Nurse patient management
+│   │   ├── xx_Nurse_Treatments.py  # Nurse treatment management
+│   │   ├── proxy_billing.py        # Proxy billing
+│   │   ├── proxy_messages.py       # Proxy messaging
+│   │   ├── proxy_portal.py         # Proxy portal
+│   │   ├── 51_Patient_Billing.py   # Patient billing
+│   │   └── 52_Patient_Inbox.py     # Patient messaging
+│   ├── modules/             # Navigation and utilities
+│   │   ├── nav.py                  # Role-based navigation
+│   │   └── styles.py               # Medical theme styling
+│   └── assets/              # Images and static files
+│       └── logo.png                # VitalFlow logo
 ```
 
 ### **Backend (Flask API)**
+
 ```
 api/
 ├── backend/
-│   ├── patient/         # Patient management endpoints
-│   ├── doctor/          # Doctor-specific endpoints
-│   ├── nurse/           # Nurse-specific endpoints
-│   ├── proxy/           # Proxy management endpoints
-│   ├── vital/           # Vital signs endpoints
-│   ├── medication/      # Medication management
-│   ├── insurance/       # Insurance and billing
-│   ├── message/         # Communication system
-│   └── alert/           # Alert and notification system
-├── backend_app.py       # Main Flask application
-└── requirements.txt     # Python dependencies
+│   ├── patient/             # Patient management endpoints
+│   ├── doctor/              # Doctor-specific endpoints
+│   ├── nurse/               # Nurse-specific endpoints
+│   ├── proxy/               # Proxy management endpoints
+│   ├── vital/               # Vital signs endpoints
+│   ├── medication/          # Medication management
+│   ├── insurance/           # Insurance and billing
+│   ├── message/             # Communication system
+│   ├── alert/               # Alert and notification system
+│   ├── condition/           # Medical conditions
+│   ├── discharge/           # Patient discharge
+│   ├── visit/               # Patient visits
+│   └── admin/               # Administrative functions
+├── backend_app.py           # Main Flask application
+└── requirements.txt         # Python dependencies
 ```
 
-## ** Key Changes Made:**
-
-1. **Updated title** from "CS 3200 Project Template" to "VitalFlow - Healthcare Portal"
-2. **Added healthcare-specific features** and functionality
-3. **Updated architecture** to reflect your actual project structure
-4. **Added proper persona descriptions** (Doctor, Nurse, Proxy, Patient)
-5. **Updated API endpoints** to match your actual backend
-6. **Added healthcare-specific sections** like medical records, insurance, etc.
-7. **Updated deployment instructions** to include your sandbox.yaml
-8. **Added proper project branding** and description
-
 ### **Database (MySQL)**
+
 - **Patient Management** - Personal information, medical history
 - **Healthcare Staff** - Doctors, nurses, and their specialties
 - **Medical Records** - Vitals, conditions, medications, visits
@@ -102,26 +115,31 @@ api/
 
 ## Authentication & Roles
 
-### **User Roles**
-- **Doctor** - Full patient access, medical records, prescribing
-- **Nurse** - Patient care, vitals monitoring, care coordination
-- **Proxy** - Dependent patient management, insurance, billing
-- **Patient** - Personal health records, appointments, medications
+### **User Roles & Personas**
+
+- **Doctor (Maya)** - Full patient access, medical records, prescribing, alerts, and patient management
+- **Nurse (Nic)** - Patient care, vitals monitoring, care coordination, treatments, and alerts
+- **Proxy (Nina Pesci)** - Dependent patient management, insurance, billing, and messaging
+- **Patient (Joe)** - Personal health records, appointments, medications, and billing
 
 ### **Security Features**
+
 - Role-based access control (RBAC)
 - Secure API endpoints
-
+- Session-based authentication
 
 ## 📱 User Interface
 
 ### **Design Principles**
+
 - **Healthcare-First** - Designed specifically for medical workflows
 - **Responsive** - Works on desktop, tablet, and mobile devices
 - **Accessible** - Follows healthcare accessibility guidelines
-- **Professional** - Clean, medical-grade interface
+- **Professional** - Clean, medical-grade interface with medical theme
 
 ### **Key Components**
+
+- **Role Selection Homepage** - Easy persona switching for development/testing
 - **Dashboard Overview** - Real-time metrics and insights
 - **Patient Cards** - Quick access to patient information
 - **Navigation Sidebar** - Role-specific menu options
@@ -130,16 +148,28 @@ api/
 ## API Endpoints
 
 ### **Core Endpoints**
-- `GET /patient/patients` - Retrieve patient list
+
+- `GET /patient/` - Retrieve patient list
+- `GET /patient/<id>` - Get specific patient details
+- `GET /patient/<id>/medications` - Get patient medications
+- `GET /patient/<id>/vitals` - Get patient vital signs
+- `GET /patient/<id>/condition` - Get patient conditions
+- `GET /patient/<id>/discharge` - Get patient discharge info
 - `GET /doctor/` - Get doctor information
 - `GET /nurse/` - Get nurse information
 - `GET /proxy/` - Get proxy information
-- `GET /vital/vitalcharts` - Retrieve vital signs
-- `GET /medication/medications` - Get medication data
+- `GET /vital/` - Retrieve vital signs
+- `GET /medication/` - Get medication data
+- `GET /message/` - Get messages
 - `POST /message/` - Send new messages
-- `GET /alert/alerts` - Retrieve alerts
+- `GET /alert/` - Retrieve alerts
+- `GET /condition/` - Get medical conditions
+- `GET /visit/` - Get patient visits
+- `GET /discharge/` - Get discharge information
+- `GET /insurance/` - Get insurance information
 
 ### **Authentication**
+
 - All endpoints require proper authentication
 - Role-based access control
 - Secure token validation
@@ -147,6 +177,7 @@ api/
 ## Database Schema
 
 ### **Key Tables**
+
 - **Patients** - Personal and medical information
 - **Doctors** - Healthcare provider details
 - **Nurses** - Nursing staff information
@@ -155,10 +186,13 @@ api/
 - **VitalChart** - Patient vital signs
 - **Medications** - Prescription information
 - **Insurance** - Policy and billing details
+- **Conditions** - Medical conditions and diagnoses
+- **Discharges** - Patient discharge information
 
 ## Deployment
 
 ### **Development/Testing**
+
 ```bash
 # Start testing containers
 docker-compose -f sandbox.yaml up -d
@@ -168,7 +202,8 @@ docker-compose -f sandbox.yaml down
 ```
 
 ### **Production Deployment**
-     ```bash
+
+```bash
 # Build and deploy
 docker-compose up -d
 
@@ -177,6 +212,7 @@ docker-compose up -d --scale web=3
 ```
 
 ### **Environment Variables**
+
 - `DB_USER` - Database username
 - `DB_PASSWORD` - Database password
 - `DB_HOST` - Database host
@@ -188,6 +224,7 @@ docker-compose up -d --scale web=3
 ## Testing
 
 ### **API Testing**
+
 ```bash
 # Test API endpoints
 curl http://localhost:4000/patient/patients
@@ -197,21 +234,25 @@ curl -H "Authorization: Bearer <token>" http://localhost:4000/doctor/
 ```
 
 ### **Frontend Testing**
-- Navigate through different personas
+
+- Navigate through different personas using the homepage role selection
 - Test form submissions
 - Verify data display
 - Check responsive design
+- Test role-based access control
 
 ## Monitoring & Logs
 
 ### **Application Logs**
+
 - API request/response logging
-
-
+- Streamlit application logging
+- Database connection monitoring
 
 ## Contributing
 
 ### **Development Setup**
+
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
@@ -219,37 +260,33 @@ curl -H "Authorization: Bearer <token>" http://localhost:4000/doctor/
 5. Submit a pull request
 
 ### **Code Standards**
+
 - Use meaningful commit messages
 - Include proper documentation
 - Test your changes thoroughly
+- Follow the existing code structure
 
-##  License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Support
 
 ### **Documentation**
+
 - [API Documentation](api/API_README.md)
 - [Database Schema](database-files/)
 - [User Guides](docs/)
-
-
-
-### **Contact**
-- **Project Maintainer**: [Sophia Ray]
-- **Email**: [ray.soph@northeastern.edy]
-- **GitHub**: [sophiaray21]
-
-
-
-
 
 ---
 
 ## Getting Started Checklist
 
+- [ ] Clone the repository
+- [ ] Install Docker and Docker Compose
+- [ ] Start the application with `docker-compose up -d`
+- [ ] Access the frontend at http://localhost:8501
+- [ ] Select your role from the homepage
+- [ ] Explore the different portals and features
 
-
-
-*VitalFlow - Streamlining healthcare, one patient at a time.*
+_VitalFlow - Streamlining healthcare, one patient at a time._
