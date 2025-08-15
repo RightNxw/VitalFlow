@@ -227,10 +227,8 @@ docker-compose up -d --scale web=3
 
 ```bash
 # Test API endpoints
-curl http://localhost:4000/patient/patients
+curl http://localhost:4000/patient
 
-# Test with authentication
-curl -H "Authorization: Bearer <token>" http://localhost:4000/doctor/
 ```
 
 ### **Frontend Testing**
