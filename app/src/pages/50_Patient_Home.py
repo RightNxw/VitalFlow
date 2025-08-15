@@ -392,14 +392,11 @@ def show_patient_home():
         # Display current visit info from database with beautiful styling
         st.markdown("""
         <div class="medical-card" style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);">
-            <h3 style="margin: 0 0 1rem 0; color: var(--accent-green);">✅ Current Visit Information</h3>
+            <h3 style="margin: 0 0 1rem 0; color: var(--accent-green);">✅ Next Visit Information</h3>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                 <div>
                     <p style="margin: 0.5rem 0;"><strong>Appointment Date:</strong> {appointment_date}</p>
                     <p style="margin: 0.5rem 0;"><strong>Admit Reason:</strong> {admit_reason}</p>
-                </div>
-                <div>
-                    <p style="margin: 0.5rem 0;"><strong>Next Visit:</strong> {next_visit}</p>
                 </div>
             </div>
         </div>
@@ -411,15 +408,15 @@ def show_patient_home():
     else:
         st.markdown("""
         <div class="medical-card" style="text-align: center; background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);">
-            <h4 style="color: var(--gray-700); margin-bottom: 0.5rem;">📋 No Current Visit</h4>
-            <p style="color: var(--gray-600); margin: 0;">No active visit found. Schedule a new appointment below.</p>
+            <h4 style="color: var(--gray-700); margin-bottom: 0.5rem;">📋 No Next Visit</h4>
+            <p style="color: var(--gray-600); margin: 0;">No upcoming visit scheduled. Schedule your next appointment below.</p>
         </div>
         """, unsafe_allow_html=True)
 
     # Form to create new visit with beautiful styling
     st.markdown("""
     <div style="margin: 2rem 0;">
-        <h3 style="color: var(--secondary-teal); margin-bottom: 1rem;">📝 Schedule New Visit</h3>
+        <h3 style="color: var(--secondary-teal); margin-bottom: 1rem;">📝 Schedule Next Visit</h3>
         <p style="color: var(--gray-600); margin: 0;">Book your next appointment</p>
     </div>
     """, unsafe_allow_html=True)
