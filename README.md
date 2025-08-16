@@ -2,6 +2,10 @@
 
 A comprehensive healthcare management system built with Streamlit frontend and Flask API backend, designed to streamline patient care, billing, and communication between healthcare providers and patients.
 
+##Project Demo Video
+
+[VitalFlow Project Demo video on VIMEO](https://vimeo.com/1110434849?share=copy)
+
 ## Features
 
 ### **Multi-Persona Access**
